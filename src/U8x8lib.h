@@ -4,7 +4,7 @@
   
   C++ Arduino wrapper for the u8x8 struct and c functions.
   
-  Universal 8bit Graphics Library (http://code.google.com/p/u8g2/)
+  Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
   Copyright (c) 2016, olikraus@gmail.com
   All rights reserved.
@@ -43,6 +43,26 @@
 #include <Print.h>
 
 #include "clib/u8x8.h"
+
+
+/* Assumption: All Arduino Boards have "SPI.h" */
+#define U8X8_HAVE_HW_SPI
+
+/* Undefine U8X8_HAVE_HW_SPI for those Boards without SPI.h */
+
+#ifdef ARDUINO_AVR_DIGISPARK
+#ifdef U8X8_HAVE_HW_SPI
+#undef U8X8_HAVE_HW_SPI
+#endif 
+#endif
+
+#ifdef __AVR_ATtiny85__
+#ifdef U8X8_HAVE_HW_SPI
+#undef U8X8_HAVE_HW_SPI
+#endif 
+#endif
+
+
 
 extern "C" uint8_t u8x8_gpio_and_delay_arduino(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 extern "C" uint8_t u8x8_byte_arduino_hw_spi(u8x8_t *u8g2, uint8_t msg, uint8_t arg_int, void *arg_ptr);
@@ -166,8 +186,32 @@ class U8X8_SSD1306_128X64_NONAME_8080 : public U8X8 {
 };
 class U8X8_SSD1306_128X64_NONAME_SW_I2C : public U8X8 {
   public: U8X8_SSD1306_128X64_NONAME_SW_I2C(uint8_t clock, uint8_t data, uint8_t reset = U8X8_PIN_NONE) : U8X8() {
-    u8x8_Setup(getU8x8(), u8x8_d_ssd1306_128x64_noname, u8x8_cad_001, u8x8_byte_ssd13xx_sw_i2c, u8x8_gpio_and_delay_arduino);
+    u8x8_Setup(getU8x8(), u8x8_d_ssd1306_128x64_noname, u8x8_cad_ssd13xx_i2c, u8x8_byte_sw_i2c, u8x8_gpio_and_delay_arduino);
     u8x8_SetPin_SSD13xx_SW_I2C(getU8x8(), clock,  data,  reset);
+  }
+};
+class U8X8_ST7920_192X32_8080 : public U8X8 {
+  public: U8X8_ST7920_192X32_8080(uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7, uint8_t enable, uint8_t cs, uint8_t dc, uint8_t reset = U8X8_PIN_NONE) : U8X8() {
+    u8x8_Setup(getU8x8(), u8x8_d_st7920_192x32, u8x8_cad_001, u8x8_byte_8bit_8080mode, u8x8_gpio_and_delay_arduino);
+    u8x8_SetPin_8Bit_8080(getU8x8(), d0, d1, d2, d3, d4, d5, d6, d7, enable, cs, dc, reset);
+  }
+};
+class U8X8_ST7920_192X32_SW_SPI : public U8X8 {
+  public: U8X8_ST7920_192X32_SW_SPI(uint8_t clock, uint8_t data, uint8_t cs, uint8_t reset = U8X8_PIN_NONE) : U8X8() {
+    u8x8_Setup(getU8x8(), u8x8_d_st7920_192x32, u8x8_cad_st7920_spi, u8x8_byte_4wire_sw_spi, u8x8_gpio_and_delay_arduino);
+    u8x8_SetPin_3Wire_SW_SPI(getU8x8(), clock, data, cs, reset);
+  }
+};
+class U8X8_ST7920_128X64_8080 : public U8X8 {
+  public: U8X8_ST7920_128X64_8080(uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7, uint8_t enable, uint8_t cs, uint8_t dc, uint8_t reset = U8X8_PIN_NONE) : U8X8() {
+    u8x8_Setup(getU8x8(), u8x8_d_st7920_128x64, u8x8_cad_001, u8x8_byte_8bit_8080mode, u8x8_gpio_and_delay_arduino);
+    u8x8_SetPin_8Bit_8080(getU8x8(), d0, d1, d2, d3, d4, d5, d6, d7, enable, cs, dc, reset);
+  }
+};
+class U8X8_ST7920_128X64_SW_SPI : public U8X8 {
+  public: U8X8_ST7920_128X64_SW_SPI(uint8_t clock, uint8_t data, uint8_t cs, uint8_t reset = U8X8_PIN_NONE) : U8X8() {
+    u8x8_Setup(getU8x8(), u8x8_d_st7920_128x64, u8x8_cad_st7920_spi, u8x8_byte_4wire_sw_spi, u8x8_gpio_and_delay_arduino);
+    u8x8_SetPin_3Wire_SW_SPI(getU8x8(), clock, data, cs, reset);
   }
 };
 class U8X8_UC1701_DOGS102_4W_SW_SPI : public U8X8 {

@@ -4,7 +4,7 @@
   
   Intersection calculation, code taken from u8g_clip.c
 
-  Universal 8bit Graphics Library (http://code.google.com/p/u8g2/)
+  Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
   Copyright (c) 2016, olikraus@gmail.com
   All rights reserved.
@@ -46,6 +46,7 @@
 
 #ifdef U8G2_WITH_INTERSECTION    
 
+#ifdef OLD_VERSION_WITH_SYMETRIC_BOUNDARIES
 
 /*
   intersection assumptions:
@@ -57,6 +58,18 @@
     ---1-1--- 1             b1 <= a2 && b2 >= a1
   */
 
+
+/*
+  calculate the intersection between a0/a1 and v0/v1
+  The intersection check returns one if the range of a0/a1 has an intersection with v0/v1.
+  The intersection check includes the boundary values v1 and a1.
+
+  The following asserts will succeed:
+    assert( u8g2_is_intersection_decision_tree(4, 6, 7, 9) == 0 );
+    assert( u8g2_is_intersection_decision_tree(4, 6, 6, 9) != 0 );
+    assert( u8g2_is_intersection_decision_tree(6, 9, 4, 6) != 0 );
+    assert( u8g2_is_intersection_decision_tree(7, 9, 4, 6) == 0 );  
+*/
 
 //static uint8_t U8G2_ALWAYS_INLINE u8g2_is_intersection_decision_tree(u8g_uint_t a0, u8g_uint_t a1, u8g_uint_t v0, u8g_uint_t v1) 
 static uint8_t u8g2_is_intersection_decision_tree(u8g2_uint_t a0, u8g2_uint_t a1, u8g2_uint_t v0, u8g2_uint_t v1) 
@@ -99,7 +112,57 @@ static uint8_t u8g2_is_intersection_decision_tree(u8g2_uint_t a0, u8g2_uint_t a1
   }
 }
 
+#endif	/* OLD_VERSION_WITH_SYMETRIC_BOUNDARIES */
 
+
+/*
+  version with asymetric boundaries.
+  a1 and v1 are excluded
+  v0 == v1 is not support end return 1
+*/
+uint8_t u8g2_is_intersection_decision_tree(u8g2_uint_t a0, u8g2_uint_t a1, u8g2_uint_t v0, u8g2_uint_t v1)
+{
+  if ( v0 < a1 )		// v0 <= a1
+  {
+    if ( v1 > a0 )	// v1 >= a0
+    {
+      return 1;
+    }
+    else
+    {
+      if ( v0 > v1 )	// v0 > v1
+      {
+	return 1;
+      }
+      else
+      {
+	return 0;
+      }
+    }
+  }
+  else
+  {
+    if ( v1 > a0 )	// v1 >= a0
+    {
+      if ( v0 > v1 )	// v0 > v1
+      {
+	return 1;
+      }
+      else
+      {
+	return 0;
+      }
+    }
+    else
+    {
+      return 0;
+    }
+  }
+}
+
+
+
+/* usually upper limits are not included, however this intersection check INCLUDES the limits */
 uint8_t u8g2_IsIntersection(u8g2_t *u8g2, u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t x1, u8g2_uint_t y1)
 {
   if ( u8g2_is_intersection_decision_tree(u8g2->user_y0, u8g2->user_y1, y0, y1) == 0 )

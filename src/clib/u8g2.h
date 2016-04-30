@@ -2,8 +2,7 @@
 
   u8g2.h
 
-
-  Universal 8bit Graphics Library (http://code.google.com/p/u8g2/)
+  Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
   Copyright (c) 2016, olikraus@gmail.com
   All rights reserved.
@@ -61,9 +60,21 @@
 
 #include "u8x8.h"
 
+
+/*
+  The following macro enables 16 Bit mode. 
+  Without defining this macro all calulations are done with 8 Bit (1 Byte) variables.
+  Especially on AVR architecture, this will save some space. 
+  If this macro is defined, then U8g2 will switch to 16 Bit mode.
+  Use 16 Bit mode for any display with more than 240 pixel in one 
+  direction.
+*/
+//#define U8G2_16BIT
+
 /*
   The following macro enables the HVLine speed optimization.
   It will consume about 40 bytes more in flash memory of the AVR.
+  HVLine procedures are also used by the text drawing functions.
 */
 #define U8G2_HVLINE_SPEED_OPTIMIZATION
 
@@ -75,8 +86,8 @@
 
 /*
   The following macro activates the early intersection check with the current visible area.
-  Clipping (and low level intersection calculation) may still happen and is controlled by U8G2_WITH_CLIPPING.
-  This early intersection check mainly improves speed for the picture loop (u8g2_FirstPage/NextPage).
+  Clipping (and low level intersection calculation) will still happen and is controlled by U8G2_WITH_CLIPPING.
+  This early intersection check only improves speed for the picture loop (u8g2_FirstPage/NextPage).
   With a full framebuffer in RAM and if most graphical elements are drawn within the visible area, then this
   macro can be commented to reduce code size.
 */
@@ -126,6 +137,9 @@
 */
 #define U8G2_WITH_CLIPPING
 
+
+
+
 /*==========================================*/
 
 
@@ -138,6 +152,12 @@
 #define U8G2_FONT_SECTION(name) U8X8_FONT_SECTION(name) 
 
 
+/* the macro U8G2_USE_LARGE_FONTS disables large fonts (>32K) */
+/* it can be enabled for those uC supporting larger arrays */
+#ifdef __arm__
+#define U8G2_USE_LARGE_FONTS
+#endif
+
 /*==========================================*/
 /* C++ compatible */
 
@@ -147,13 +167,23 @@ extern "C" {
 
 /*==========================================*/
 
+#ifdef U8G2_16BIT
 typedef uint16_t u8g2_uint_t;	/* for pixel position only */
+typedef int16_t u8g2_int_t;		/* introduced for circle calculation */
+typedef int32_t u8g2_long_t;		/* introduced for ellipse calculation */
+#else
+typedef uint8_t u8g2_uint_t;		/* for pixel position only */
+typedef int8_t u8g2_int_t;		/* introduced for circle calculation */
+typedef int16_t u8g2_long_t;		/* introduced for ellipse calculation */
+#endif
+
 
 typedef struct u8g2_struct u8g2_t;
 typedef struct u8g2_cb_struct u8g2_cb_t;
 
 typedef void (*u8g2_update_dimension_cb)(u8g2_t *u8g2);
 typedef void (*u8g2_draw_l90_cb)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir);
+typedef void (*u8g2_draw_ll_hvline_cb)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir);
 
 
 
@@ -211,6 +241,8 @@ struct _u8g2_font_decode_t
 
   uint8_t decode_bit_pos;			/* bitpos inside a byte of the compressed data */
   uint8_t is_transparent;
+  uint8_t fg_color;
+  uint8_t bg_color;
 #ifdef U8G2_WITH_FONT_ROTATION  
   uint8_t dir;				/* direction */
 #endif
@@ -230,6 +262,7 @@ typedef u8g2_uint_t (*u8g2_font_calc_vref_fnptr)(u8g2_t *u8g2);
 struct u8g2_struct
 {
   u8x8_t u8x8;
+  u8g2_draw_ll_hvline_cb ll_hvline;	/* low level hvline procedure */
   const u8g2_cb_t *cb;		/* callback drawprocedures, can be replaced for rotation */
   
   /* the following variables must be assigned during u8g2 setup */
@@ -254,10 +287,12 @@ struct u8g2_struct
   u8g2_uint_t height;
   
   /* ths is the clip box for the user to check if a specific box has an intersection */
+  /* use u8g2_IsIntersection from u8g2_intersection.c to test against this intersection */
+  /* boundary values are part of the box so that they can be used with u8g2_IsIntersection */
   u8g2_uint_t user_x0;	/* left corner of the buffer */
   u8g2_uint_t user_x1;	/* right corner of the buffer (excluded) */
-  u8g2_uint_t user_y0;
-  u8g2_uint_t user_y1;
+  u8g2_uint_t user_y0;	/* upper edge of the buffer */
+  u8g2_uint_t user_y1;	/* lower edge of the buffer (excluded) */
   
   /* information about the current font */
   const uint8_t *font;             /* current font for all text procedures */
@@ -269,7 +304,8 @@ struct u8g2_struct
   int8_t font_ref_ascent;
   int8_t font_ref_descent;
 
-  uint8_t draw_color;		/* 0: clear pixel, 1: set pixel */
+  uint8_t draw_color;		/* 0: clear pixel, 1: set pixel, modified and restored by font procedures */
+					/* draw_color can be used also directly by the user API */
   
 #ifdef U8G2_WITH_HVLINE_COUNT
   unsigned long hv_cnt;
@@ -292,6 +328,7 @@ struct u8g2_struct
 
 #define u8g2_GetDisplayHeight(u8g2) ((u8g2)->height)
 #define u8g2_GetDisplayWidth(u8g2) ((u8g2)->width)
+#define u8g2_GetDrawColor(u8g2) ((u8g2)->draw_color)
 
 
 /*==========================================*/
@@ -306,14 +343,30 @@ extern const u8g2_cb_t u8g2_cb_r3;
 #define U8G2_R1	(&u8g2_cb_r1)
 #define U8G2_R2	(&u8g2_cb_r2)
 #define U8G2_R3	(&u8g2_cb_r3)
+/*
+  u8g2:			A new, not yet initialized u8g2 memory areay
+  buf:			Memory are of size tile_buf_height*<width of the display in pixel>
+  tile_buf_height:	Number of full lines
+  ll_hvline_cb:		one of:
+    u8g2_ll_hvline_vertical_top_lsb
+    u8g2_ll_hvline_horizontal_right_lsb
+  u8g2_cb			U8G2_R0 .. U8G2_R3
+      
+*/
 
-void u8g2_SetupBuffer(u8g2_t *u8g2, uint8_t *buf, uint8_t tile_buf_height, const u8g2_cb_t *u8g2_cb);
+void u8g2_SetupBuffer(u8g2_t *u8g2, uint8_t *buf, uint8_t tile_buf_height, u8g2_draw_ll_hvline_cb ll_hvline_cb, const u8g2_cb_t *u8g2_cb);
 
 /*==========================================*/
 /* u8g2_d_memory.c generated code start */
 uint8_t *u8g2_m_ssd1306_16_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_ssd1306_16_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_ssd1306_16_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_st7920_24_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_st7920_24_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_st7920_24_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_st7920_16_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_st7920_16_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_st7920_16_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_uc1701_13_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_uc1701_13_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_uc1701_13_f(uint8_t *page_cnt);
@@ -325,6 +378,21 @@ uint8_t *u8g2_m_uc1701_13_f(uint8_t *page_cnt);
 void u8g2_Setup_ssd1306_128x64_noname_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_ssd1306_128x64_noname_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_ssd1306_128x64_noname_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_ssd1306_i2c_128x64_noname_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_ssd1306_i2c_128x64_noname_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_ssd1306_i2c_128x64_noname_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7920_p_192x32_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7920_p_192x32_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7920_p_192x32_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7920_s_192x32_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7920_s_192x32_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7920_s_192x32_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7920_p_128x64_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7920_p_128x64_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7920_p_128x64_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7920_s_128x64_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7920_s_128x64_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7920_s_128x64_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_uc1701_dogs102_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_uc1701_dogs102_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_uc1701_dogs102_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
@@ -342,9 +410,33 @@ uint8_t u8g2_NextPage(u8g2_t *u8g2);
 
 
 /*==========================================*/
+/* u8g2_ll_hvline.c */
+/*
+  x,y		Upper left position of the line within the local buffer (not the display!)
+  len		length of the line in pixel, len must not be 0
+  dir		0: horizontal line (left to right)
+		1: vertical line (top to bottom)
+  asumption: 
+    all clipping done
+*/
+
+/* SSD13xx, UC17xx, UC16xx */
+void u8g2_ll_hvline_vertical_top_lsb(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir);
+/* ST7920 */
+void u8g2_ll_hvline_horizontal_right_lsb(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir);
+
+
+/*==========================================*/
 /* u8g2_hvline.c */
+
+/* u8g2_DrawHVLine does not use u8g2_IsIntersection */
 void u8g2_DrawHVLine(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir);
 
+/* the following three function will do an intersection test of this is enabled with U8G2_WITH_INTERSECTION */
+void u8g2_DrawHLine(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len);
+void u8g2_DrawVLine(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len);
+void u8g2_DrawPixel(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y);
+void u8g2_SetDrawColor(u8g2_t *u8g2, uint8_t color) U8G2_NOINLINE;  /* u8g: u8g_SetColorIndex(u8g_t *u8g, uint8_t idx); */
 
 
 /*==========================================*/
@@ -352,6 +444,36 @@ void u8g2_DrawHVLine(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len
 #ifdef U8G2_WITH_INTERSECTION    
 uint8_t u8g2_IsIntersection(u8g2_t *u8g2, u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t x1, u8g2_uint_t y1);
 #endif /* U8G2_WITH_INTERSECTION */
+
+
+
+/*==========================================*/
+/* u8g2_circle.c */
+#define U8G2_DRAW_UPPER_RIGHT 0x01
+#define U8G2_DRAW_UPPER_LEFT  0x02
+#define U8G2_DRAW_LOWER_LEFT 0x04
+#define U8G2_DRAW_LOWER_RIGHT  0x08
+#define U8G2_DRAW_ALL (U8G2_DRAW_UPPER_RIGHT|U8G2_DRAW_UPPER_LEFT|U8G2_DRAW_LOWER_RIGHT|U8G2_DRAW_LOWER_LEFT)
+void u8g2_DrawCircle(u8g2_t *u8g2, u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rad, uint8_t option);
+void u8g2_DrawDisc(u8g2_t *u8g2, u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rad, uint8_t option);
+void u8g2_DrawEllipse(u8g2_t *u8g2, u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rx, u8g2_uint_t ry, uint8_t option);
+void u8g2_DrawFilledEllipse(u8g2_t *u8g2, u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rx, u8g2_uint_t ry, uint8_t option);
+
+
+/*==========================================*/
+/* u8g2_box.c */
+void u8g2_DrawBox(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h);
+void u8g2_DrawFrame(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h);
+void u8g2_DrawRBox(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, u8g2_uint_t r);
+void u8g2_DrawRFrame(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, u8g2_uint_t r);
+
+
+/*==========================================*/
+/* u8g2_polygon.c */
+void u8g2_ClearPolygonXY(void);
+void u8g2_AddPolygonXY(u8g2_t *u8g2, int16_t x, int16_t y);
+void u8g2_DrawPolygon(u8g2_t *u8g2);
+void u8g2_DrawTriangle(u8g2_t *u8g2, int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 
 
 /*==========================================*/
@@ -364,6 +486,7 @@ size_t u8g2_GetFontSize(const uint8_t *font_arg);
 #define U8G2_FONT_HEIGHT_MODE_ALL 2
 
 void u8g2_SetFont(u8g2_t *u8g2, const uint8_t  *font);
+void u8g2_SetFontMode(u8g2_t *u8g2, uint8_t is_transparent);
 
 uint8_t u8g2_IsGlyph(u8g2_t *u8g2, uint16_t requested_encoding);
 int8_t u8g2_GetGlyphWidth(u8g2_t *u8g2, uint16_t requested_encoding);
@@ -378,8 +501,13 @@ u8g2_uint_t u8g2_DrawUTF8(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char
 #define u8g2_GetAscent(u8g2) ((u8g2)->font_info.ascent_A)
 #define u8g2_GetDescent(u8g2) ((u8g2)->font_info.descent_g)
 
-u8g2_uint_t u8g2_GetStringWidth(u8g2_t *u8g2, const char *s);
+u8g2_uint_t u8g2_GetStrWidth(u8g2_t *u8g2, const char *s);
 u8g2_uint_t u8g2_GetUTF8Width(u8g2_t *u8g2, const char *str);
+
+void u8g2_SetFontPosBaseline(u8g2_t *u8g2);
+void u8g2_SetFontPosBottom(u8g2_t *u8g2);
+void u8g2_SetFontPosTop(u8g2_t *u8g2);
+void u8g2_SetFontPosCenter(u8g2_t *u8g2);
 
 
 /*==========================================*/
@@ -392,7 +520,18 @@ void u8g2_SetupBuffer_SDL_128x64_4(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
 void u8g2_SetupBuffer_TGA_DESC(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
 void u8g2_SetupBuffer_TGA_LCD(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
 
+/*==========================================*/
+/* u8x8_d_utf8.c */
+/* 96x32 stdout */
+void u8g2_SetupBuffer_Utf8(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
 
+/*==========================================*/
+/* u8g2_u8toa.c */
+const char *u8g2_u8toa(uint8_t v, uint8_t d);
+
+/*==========================================*/
+/* u8g2_u16toa.c */
+const char *u8g2_u16toa(uint16_t v, uint8_t d);
 
 
 /*==========================================*/
@@ -600,6 +739,15 @@ extern const uint8_t u8g2_font_cu12_t_symbols[] U8G2_FONT_SECTION("u8g2_font_cu1
 extern const uint8_t u8g2_font_unifont_t_latin[] U8G2_FONT_SECTION("u8g2_font_unifont_t_latin");
 extern const uint8_t u8g2_font_unifont_t_greek[] U8G2_FONT_SECTION("u8g2_font_unifont_t_greek");
 extern const uint8_t u8g2_font_unifont_t_cyrillic[] U8G2_FONT_SECTION("u8g2_font_unifont_t_cyrillic");
+extern const uint8_t u8g2_font_unifont_t_chinese1[] U8G2_FONT_SECTION("u8g2_font_unifont_t_chinese1");
+extern const uint8_t u8g2_font_unifont_t_chinese2[] U8G2_FONT_SECTION("u8g2_font_unifont_t_chinese2");
+extern const uint8_t u8g2_font_unifont_t_chinese3[] U8G2_FONT_SECTION("u8g2_font_unifont_t_chinese3");
+extern const uint8_t u8g2_font_gb16st_t_1[] U8G2_FONT_SECTION("u8g2_font_gb16st_t_1");
+extern const uint8_t u8g2_font_gb16st_t_2[] U8G2_FONT_SECTION("u8g2_font_gb16st_t_2");
+extern const uint8_t u8g2_font_gb16st_t_3[] U8G2_FONT_SECTION("u8g2_font_gb16st_t_3");
+extern const uint8_t u8g2_font_gb24st_t_1[] U8G2_FONT_SECTION("u8g2_font_gb24st_t_1");
+extern const uint8_t u8g2_font_gb24st_t_2[] U8G2_FONT_SECTION("u8g2_font_gb24st_t_2");
+extern const uint8_t u8g2_font_gb24st_t_3[] U8G2_FONT_SECTION("u8g2_font_gb24st_t_3");
 extern const uint8_t u8g2_font_unifont_t_symbols[] U8G2_FONT_SECTION("u8g2_font_unifont_t_symbols");
 extern const uint8_t u8g2_font_artossans8_8r[] U8G2_FONT_SECTION("u8g2_font_artossans8_8r");
 extern const uint8_t u8g2_font_artossans8_8n[] U8G2_FONT_SECTION("u8g2_font_artossans8_8n");
@@ -1008,6 +1156,202 @@ extern const uint8_t u8g2_font_pcsenior_8n[] U8G2_FONT_SECTION("u8g2_font_pcseni
 extern const uint8_t u8g2_font_pcsenior_8u[] U8G2_FONT_SECTION("u8g2_font_pcsenior_8u");
 
 /* end font list */
+
+/*==========================================*/
+/* u8g font mapping, might be incomplete.... */
+
+
+#define u8g_font_10x20   u8g2_font_10x20_tf
+#define u8g_font_10x20r   u8g2_font_10x20_tr
+#define u8g_font_4x6   u8g2_font_4x6_tf
+#define u8g_font_4x6r   u8g2_font_4x6_tr
+#define u8g_font_5x7   u8g2_font_5x7_tf
+#define u8g_font_5x7r   u8g2_font_5x7_tr
+#define u8g_font_5x8   u8g2_font_5x8_tf
+#define u8g_font_5x8r   u8g2_font_5x8_tr
+#define u8g_font_6x10   u8g2_font_6x10_tf
+#define u8g_font_6x10r   u8g2_font_6x10_tr
+#define u8g_font_6x12   u8g2_font_6x12_tf
+#define u8g_font_6x12r   u8g2_font_6x12_tr
+#define u8g_font_6x13B   u8g2_font_6x13B_tf
+#define u8g_font_6x13Br   u8g2_font_6x13B_tr
+#define u8g_font_6x13   u8g2_font_6x13_tf
+#define u8g_font_6x13r   u8g2_font_6x13_tr
+#define u8g_font_6x13O   u8g2_font_6x13O_tf
+#define u8g_font_6x13Or   u8g2_font_6x13O_tr
+#define u8g_font_7x13B   u8g2_font_7x13B_tf
+#define u8g_font_7x13Br   u8g2_font_7x13B_tr
+#define u8g_font_7x13   u8g2_font_7x13_tf
+#define u8g_font_7x13r   u8g2_font_7x13_tr
+#define u8g_font_7x13O   u8g2_font_7x13O_tf
+#define u8g_font_7x13Or   u8g2_font_7x13O_tr
+#define u8g_font_7x14B   u8g2_font_7x14B_tf
+#define u8g_font_7x14Br   u8g2_font_7x14B_tr
+#define u8g_font_7x14   u8g2_font_7x14_tf
+#define u8g_font_7x14r   u8g2_font_7x14_tr
+#define u8g_font_8x13B   u8g2_font_8x13B_tf
+#define u8g_font_8x13Br   u8g2_font_8x13B_tr
+#define u8g_font_8x13   u8g2_font_8x13_tf
+#define u8g_font_8x13r   u8g2_font_8x13_tr
+#define u8g_font_8x13O   u8g2_font_8x13O_tf
+#define u8g_font_8x13Or   u8g2_font_8x13O_tr
+#define u8g_font_9x15B   u8g2_font_9x15B_tf
+#define u8g_font_9x15Br   u8g2_font_9x15B_tr
+#define u8g_font_9x15   u8g2_font_9x15_tf
+#define u8g_font_9x15r   u8g2_font_9x15_tr
+#define u8g_font_9x18B   u8g2_font_9x18B_tf
+#define u8g_font_9x18   u8g2_font_9x18_tf
+#define u8g_font_9x18Br   u8g2_font_9x18B_tr
+#define u8g_font_9x18r   u8g2_font_9x18_tr
+#define u8g_font_cu12   u8g2_font_cu12_tf
+#define u8g_font_micro   u8g2_font_micro_tf
+#define u8g_font_unifont   u8g2_font_unifont_t_latin
+#define u8g_font_unifontr   u8g2_font_unifont_t_latin
+#define u8g_font_courB08   u8g2_font_courB08_tf
+#define u8g_font_courB08r   u8g2_font_courB08_tr
+#define u8g_font_courB10   u8g2_font_courB10_tf
+#define u8g_font_courB10r   u8g2_font_courB10_tr
+#define u8g_font_courB12   u8g2_font_courB12_tf
+#define u8g_font_courB12r   u8g2_font_courB12_tr
+#define u8g_font_courB14   u8g2_font_courB14_tf
+#define u8g_font_courB14r   u8g2_font_courB14_tr
+#define u8g_font_courB18   u8g2_font_courB18_tf
+#define u8g_font_courB18r   u8g2_font_courB18_tr
+#define u8g_font_courB24   u8g2_font_courB24_tf
+#define u8g_font_courB24r   u8g2_font_courB24_tr
+#define u8g_font_courB24n   u8g2_font_courB24_tn
+#define u8g_font_courR08   u8g2_font_courR08_tf
+#define u8g_font_courR08r   u8g2_font_courR08_tr
+#define u8g_font_courR10   u8g2_font_courR10_tf
+#define u8g_font_courR10r   u8g2_font_courR10_tr
+#define u8g_font_courR12   u8g2_font_courR12_tf
+#define u8g_font_courR12r   u8g2_font_courR12_tr
+#define u8g_font_courR14   u8g2_font_courR14_tf
+#define u8g_font_courR14r   u8g2_font_courR14_tr
+#define u8g_font_courR18   u8g2_font_courR18_tf
+#define u8g_font_courR18r   u8g2_font_courR18_tr
+#define u8g_font_courR24   u8g2_font_courR24_tf
+#define u8g_font_courR24r   u8g2_font_courR24_tr
+#define u8g_font_courR24n   u8g2_font_courR24_tn
+#define u8g_font_helvB08   u8g2_font_helvB08_tf
+#define u8g_font_helvB08r   u8g2_font_helvB08_tr
+#define u8g_font_helvB08n   u8g2_font_helvB08_tn
+#define u8g_font_helvB10   u8g2_font_helvB10_tf
+#define u8g_font_helvB10r   u8g2_font_helvB10_tr
+#define u8g_font_helvB10n   u8g2_font_helvB10_tn
+#define u8g_font_helvB12   u8g2_font_helvB12_tf
+#define u8g_font_helvB12r   u8g2_font_helvB12_tr
+#define u8g_font_helvB12n   u8g2_font_helvB12_tn
+#define u8g_font_helvB14   u8g2_font_helvB14_tf
+#define u8g_font_helvB14r   u8g2_font_helvB14_tr
+#define u8g_font_helvB14n   u8g2_font_helvB14_tn
+#define u8g_font_helvB18   u8g2_font_helvB18_tf
+#define u8g_font_helvB18r   u8g2_font_helvB18_tr
+#define u8g_font_helvB18n   u8g2_font_helvB18_tn
+#define u8g_font_helvB24   u8g2_font_helvB24_tf
+#define u8g_font_helvB24r   u8g2_font_helvB24_tr
+#define u8g_font_helvB24n   u8g2_font_helvB24_tn
+#define u8g_font_helvR08   u8g2_font_helvR08_tf
+#define u8g_font_helvR08r   u8g2_font_helvR08_tr
+#define u8g_font_helvR08n   u8g2_font_helvR08_tn
+#define u8g_font_helvR10   u8g2_font_helvR10_tf
+#define u8g_font_helvR10r   u8g2_font_helvR10_tr
+#define u8g_font_helvR10n   u8g2_font_helvR10_tn
+#define u8g_font_helvR12   u8g2_font_helvR12_tf
+#define u8g_font_helvR12r   u8g2_font_helvR12_tr
+#define u8g_font_helvR12n   u8g2_font_helvR12_tn
+#define u8g_font_helvR14   u8g2_font_helvR14_tf
+#define u8g_font_helvR14r   u8g2_font_helvR14_tr
+#define u8g_font_helvR14n   u8g2_font_helvR14_tn
+#define u8g_font_helvR18   u8g2_font_helvR18_tf
+#define u8g_font_helvR18r   u8g2_font_helvR18_tr
+#define u8g_font_helvR18n   u8g2_font_helvR18_tn
+#define u8g_font_helvR24   u8g2_font_helvR24_tf
+#define u8g_font_helvR24r   u8g2_font_helvR24_tr
+#define u8g_font_helvR24n   u8g2_font_helvR24_tn
+#define u8g_font_ncenB08   u8g2_font_ncenB08_tf
+#define u8g_font_ncenB08r   u8g2_font_ncenB08_tr
+#define u8g_font_ncenB10   u8g2_font_ncenB10_tf
+#define u8g_font_ncenB10r   u8g2_font_ncenB10_tr
+#define u8g_font_ncenB12   u8g2_font_ncenB12_tf
+#define u8g_font_ncenB12r   u8g2_font_ncenB12_tr
+#define u8g_font_ncenB14   u8g2_font_ncenB14_tf
+#define u8g_font_ncenB14r   u8g2_font_ncenB14_tr
+#define u8g_font_ncenB18   u8g2_font_ncenB18_tf
+#define u8g_font_ncenB18r   u8g2_font_ncenB18_tr
+#define u8g_font_ncenB24   u8g2_font_ncenB24_tf
+#define u8g_font_ncenB24r   u8g2_font_ncenB24_tr
+#define u8g_font_ncenB24n   u8g2_font_ncenB24_tn
+#define u8g_font_ncenR08   u8g2_font_ncenR08_tf
+#define u8g_font_ncenR08r   u8g2_font_ncenR08_tr
+#define u8g_font_ncenR10   u8g2_font_ncenR10_tf
+#define u8g_font_ncenR10r   u8g2_font_ncenR10_tr
+#define u8g_font_ncenR12   u8g2_font_ncenR12_tf
+#define u8g_font_ncenR12r   u8g2_font_ncenR12_tr
+#define u8g_font_ncenR14   u8g2_font_ncenR14_tf
+#define u8g_font_ncenR14r   u8g2_font_ncenR14_tr
+#define u8g_font_ncenR18   u8g2_font_ncenR18_tf
+#define u8g_font_ncenR18r   u8g2_font_ncenR18_tr
+#define u8g_font_ncenR24   u8g2_font_ncenR24_tf
+#define u8g_font_ncenR24r   u8g2_font_ncenR24_tr
+#define u8g_font_ncenR24n   u8g2_font_ncenR24_tn
+#define u8g_font_timB08   u8g2_font_timB08_tf
+#define u8g_font_timB08r   u8g2_font_timB08_tr
+#define u8g_font_timB10   u8g2_font_timB10_tf
+#define u8g_font_timB10r   u8g2_font_timB10_tr
+#define u8g_font_timB12   u8g2_font_timB12_tf
+#define u8g_font_timB12r   u8g2_font_timB12_tr
+#define u8g_font_timB14   u8g2_font_timB14_tf
+#define u8g_font_timB14r   u8g2_font_timB14_tr
+#define u8g_font_timB18   u8g2_font_timB18_tf
+#define u8g_font_timB18r   u8g2_font_timB18_tr
+#define u8g_font_timB24   u8g2_font_timB24_tf
+#define u8g_font_timB24r   u8g2_font_timB24_tr
+#define u8g_font_timB24n   u8g2_font_timB24_tn
+#define u8g_font_timR08   u8g2_font_timR08_tf
+#define u8g_font_timR08r   u8g2_font_timR08_tr
+#define u8g_font_timR10   u8g2_font_timR10_tf
+#define u8g_font_timR10r   u8g2_font_timR10_tr
+#define u8g_font_timR12   u8g2_font_timR12_tf
+#define u8g_font_timR12r   u8g2_font_timR12_tr
+#define u8g_font_timR14   u8g2_font_timR14_tf
+#define u8g_font_timR14r   u8g2_font_timR14_tr
+#define u8g_font_timR18   u8g2_font_timR18_tf
+#define u8g_font_timR18r   u8g2_font_timR18_tr
+#define u8g_font_timR24   u8g2_font_timR24_tf
+#define u8g_font_timR24r   u8g2_font_timR24_tr
+#define u8g_font_timR24n   u8g2_font_timR24_tn
+#define u8g_font_p01type   u8g2_font_p01type_tf
+#define u8g_font_p01typer   u8g2_font_p01type_tr
+#define u8g_font_lucasfont_alternate   u8g2_font_lucasfont_alternate_tf
+#define u8g_font_lucasfont_alternater   u8g2_font_lucasfont_alternate_tr
+#define u8g_font_chikita   u8g2_font_chikita_tf
+#define u8g_font_chikitar   u8g2_font_chikita_tr
+#define u8g_font_pixelle_micro   u8g2_font_pixelle_micro_tf
+#define u8g_font_pixelle_micror   u8g2_font_pixelle_micro_tr
+#define u8g_font_trixel_square   u8g2_font_trixel_square_tf
+#define u8g_font_trixel_squarer   u8g2_font_trixel_square_tr
+#define u8g_font_robot_de_niro   u8g2_font_robot_de_niro_tf
+#define u8g_font_robot_de_niror   u8g2_font_robot_de_niro_tr
+#define u8g_font_baby   u8g2_font_baby_tf
+#define u8g_font_babyr   u8g2_font_baby_tr
+#define u8g_font_blipfest_07   u8g2_font_blipfest_07_tr
+#define u8g_font_blipfest_07r   u8g2_font_blipfest_07_tr
+#define u8g_font_blipfest_07n   u8g2_font_blipfest_07_tn
+#define u8g_font_profont10   u8g2_font_profont10_tf
+#define u8g_font_profont10r   u8g2_font_profont10_tr
+#define u8g_font_profont11   u8g2_font_profont11_tf
+#define u8g_font_profont11r   u8g2_font_profont11_tr
+#define u8g_font_profont12   u8g2_font_profont12_tf
+#define u8g_font_profont12r   u8g2_font_profont12_tr
+#define u8g_font_profont15   u8g2_font_profont15_tf
+#define u8g_font_profont15r   u8g2_font_profont15_tr
+#define u8g_font_profont17   u8g2_font_profont17_tf
+#define u8g_font_profont17r   u8g2_font_profont17_tr
+#define u8g_font_profont22   u8g2_font_profont22_tf
+#define u8g_font_profont22r   u8g2_font_profont22_tr
+#define u8g_font_profont29   u8g2_font_profont29_tf
+#define u8g_font_profont29r   u8g2_font_profont29_tr
 
 
 /*==========================================*/

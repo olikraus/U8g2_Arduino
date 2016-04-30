@@ -2,7 +2,7 @@
 
   u8x8_d_uc1701_dogs102.c
   
-  Universal 8bit Graphics Library (http://code.google.com/p/u8g2/)
+  Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
   Copyright (c) 2016, olikraus@gmail.com
   All rights reserved.
@@ -122,6 +122,8 @@ static const u8x8_display_info_t u8x8_uc1701_display_info =
 #else
   /* default_x_offset = */ 30,
 #endif
+  /* pixel_width = */ 102,
+  /* pixel_height = */ 64
 };
 
 uint8_t u8x8_d_uc1701_dogs102(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)

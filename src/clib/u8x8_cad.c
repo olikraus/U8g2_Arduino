@@ -4,7 +4,7 @@
   
   "command arg data" interface to the graphics controller
 
-  Universal 8bit Graphics Library (http://code.google.com/p/u8g2/)
+  Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
   Copyright (c) 2016, olikraus@gmail.com
   All rights reserved.
@@ -115,13 +115,13 @@ uint8_t u8x8_cad_EndTransfer(u8x8_t *u8x8)
 }
 
 /*
-  0000ccaa	command arg combination, aa = no of args, cc = no of commands
-  0001dddd	data sequence
-  11110000	CS Off
-  11110001	CS On
-  11111110	xxxxxxxx		delay in millis
-  11111111	End of sequence
-
+  21 c		send command c
+  22 a		send arg a
+  23 d		send data d
+  24			CS on
+  25			CS off
+  254 milli	delay by milliseconds
+  255		end of sequence
 */
 
 void u8x8_cad_SendSequence(u8x8_t *u8x8, uint8_t const *data)
@@ -224,6 +224,100 @@ uint8_t u8x8_cad_001(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
     case U8X8_MSG_CAD_SET_I2C_ADR:
     case U8X8_MSG_CAD_SET_DEVICE:
       return u8x8->byte_cb(u8x8, msg, arg_int, arg_ptr);
+    default:
+      return 0;
+  }
+  return 1;
+}
+
+/* cad procedure for the ST7920 in SPI mode */
+/* u8x8_byte_SetDC is not used */
+uint8_t u8x8_cad_st7920_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+{
+  uint8_t *data;
+  uint8_t b;
+  
+  switch(msg)
+  {
+    case U8X8_MSG_CAD_SEND_CMD:
+      //u8x8_byte_SetDC(u8x8, 0);
+      u8x8_byte_SendByte(u8x8, 0x0f8);
+      u8x8_byte_SendByte(u8x8, arg_int & 0x0f0);
+      u8x8_byte_SendByte(u8x8, arg_int << 4);
+      break;
+    case U8X8_MSG_CAD_SEND_ARG:
+      //u8x8_byte_SetDC(u8x8, 0);
+      u8x8_byte_SendByte(u8x8, 0x0f8);
+      u8x8_byte_SendByte(u8x8, arg_int & 0x0f0);
+      u8x8_byte_SendByte(u8x8, arg_int << 4);
+      break;
+    case U8X8_MSG_CAD_SEND_DATA:
+      //u8x8_byte_SetDC(u8x8, 1);
+    
+      u8x8_byte_SendByte(u8x8, 0x0fa);
+
+      /* this loop should be optimized: multiple bytes should be sent */
+      /* u8x8_byte_SendBytes(u8x8, arg_int, arg_ptr); */
+      data = (uint8_t *)arg_ptr;
+      while( arg_int > 0 )
+      {
+	b = *data;
+	u8x8_byte_SendByte(u8x8, b & 0x0f0);
+	u8x8_byte_SendByte(u8x8, b << 4);
+	data++;
+	arg_int--;
+      }
+      break;
+    case U8X8_MSG_CAD_INIT:
+    case U8X8_MSG_CAD_START_TRANSFER:
+    case U8X8_MSG_CAD_END_TRANSFER:
+    case U8X8_MSG_CAD_SET_I2C_ADR:
+    case U8X8_MSG_CAD_SET_DEVICE:
+      return u8x8->byte_cb(u8x8, msg, arg_int, arg_ptr);
+    default:
+      return 0;
+  }
+  return 1;
+}
+
+
+/* cad procedure for the SSD13xx family in I2C mode */
+/* u8x8_byte_SetDC is not used */
+/* U8X8_MSG_BYTE_START_TRANSFER starts i2c transfer, U8X8_MSG_BYTE_END_TRANSFER stops transfer */
+
+uint8_t u8x8_cad_ssd13xx_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+{
+  switch(msg)
+  {
+    case U8X8_MSG_CAD_SEND_CMD:
+    case U8X8_MSG_CAD_SEND_ARG:
+      //u8x8_byte_SetDC(u8x8, 0);
+      u8x8_byte_StartTransfer(u8x8);
+      //u8x8_byte_SendByte(u8x8, u8x8_GetI2CAddress(u8x8));
+      u8x8_byte_SendByte(u8x8, 0x000);
+      u8x8_byte_SendByte(u8x8, arg_int);
+      u8x8_byte_EndTransfer(u8x8);      
+      break;
+    case U8X8_MSG_CAD_SEND_DATA:
+      //u8x8_byte_SetDC(u8x8, 1);
+      u8x8_byte_StartTransfer(u8x8);    
+      //u8x8_byte_SendByte(u8x8, u8x8_GetI2CAddress(u8x8));
+      u8x8_byte_SendByte(u8x8, 0x040);
+      u8x8->byte_cb(u8x8, msg, arg_int, arg_ptr);
+      u8x8_byte_EndTransfer(u8x8);
+      break;
+    case U8X8_MSG_CAD_INIT:
+      /* apply default i2c adr if required so that the start transfer msg can use this */
+      if ( u8x8->i2c_address == 255 )
+	u8x8->i2c_address = 0x078;
+	/* fall through */
+    case U8X8_MSG_CAD_SET_I2C_ADR:
+    case U8X8_MSG_CAD_SET_DEVICE:
+      return u8x8->byte_cb(u8x8, msg, arg_int, arg_ptr);
+    case U8X8_MSG_CAD_START_TRANSFER:
+    case U8X8_MSG_CAD_END_TRANSFER:
+      /* cad transfer commands are ignored */
+      break;
     default:
       return 0;
   }

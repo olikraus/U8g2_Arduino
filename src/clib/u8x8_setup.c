@@ -2,7 +2,7 @@
 
   u8x8_setup.c
 
-  Universal 8bit Graphics Library (http://code.google.com/p/u8g2/)
+  Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
   Copyright (c) 2016, olikraus@gmail.com
   All rights reserved.
@@ -57,6 +57,7 @@ void u8x8_SetupDefaults(u8x8_t *u8x8)
     u8x8->byte_cb = u8x8_dummy_cb;
     u8x8->gpio_and_delay_cb = u8x8_dummy_cb;
     u8x8->is_font_inverse_mode = 0;
+    u8x8->i2c_address = 255;
   
 #ifdef U8X8_USE_PINS 
   {

@@ -2,7 +2,7 @@
 
   u8x8.h
   
-  Universal 8bit Graphics Library (http://code.google.com/p/u8g2/)
+  Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
   Copyright (c) 2016, olikraus@gmail.com
   All rights reserved.
@@ -123,19 +123,22 @@ extern "C" {
 
 #ifdef __GNUC__
 #  define U8X8_NOINLINE __attribute__((noinline))
+#  define U8X8_SECTION(name) __attribute__ ((section (name)))
 #else
+#  define U8X8_SECTION(name)
 #  define U8X8_NOINLINE
 #endif
 
 #if defined(__GNUC__) && defined(__AVR__)
-#  define U8X8_SECTION(name) __attribute__ ((section (name)))
 #  define U8X8_FONT_SECTION(name) U8X8_SECTION(".progmem." name)
 #  define u8x8_pgm_read(adr) pgm_read_byte_near(adr)
 #endif
 
-#ifndef U8X8_SECTION
-#  define U8X8_SECTION(name) __attribute__ ((section (name)))
+#ifndef U8X8_FONT_SECTION
 #  define U8X8_FONT_SECTION(name) 
+#endif
+
+#ifndef u8x8_pgm_read
 #  define u8x8_pgm_read(adr) (*(const uint8_t *)(adr)) 
 #endif
 
@@ -216,6 +219,15 @@ struct u8x8_display_info_struct
   uint8_t tile_height;
 
   uint8_t default_x_offset;	/* default x offset for the display */
+ 
+ /* pixel width is not used by the u8x8 procedures */
+ /* instead it will be used by the u8g2 procedure, because the pixel dimension can */
+ /* not always be calculated from the tile_width/_height */
+ /* the following conditions must be true: */
+ /* pixel_width <= tile_width*8 */
+ /* pixel_height <= tile_height*8 */
+  uint16_t pixel_width;
+  uint16_t pixel_height;
 };
 
 
@@ -236,6 +248,7 @@ struct u8x8_struct
   u8x8_char_cb char_cb;		/*  procedure, which will be used to get the next char from the string */
   uint8_t x_offset;	/* copied from info struct, can be modified in flip mode */
   uint8_t is_font_inverse_mode; 	/* 0: normal, 1: font glyphs are inverted */
+  uint8_t i2c_address;	/* a valid i2c adr. Initially this is 255, but this is set to something usefull during DISPLAY_INIT */
   uint8_t i2c_started;	/* for i2c interface */
 #ifdef U8X8_USE_PINS 
   uint8_t pins[U8X8_PIN_CNT];	/* defines a pinlist: Mainly a list of pins for the Arduino Envionment, use U8X8_PIN_xxx to access */
@@ -244,6 +257,7 @@ struct u8x8_struct
 
 #define u8x8_GetCols(u8x8) ((u8x8)->display_info->tile_width)
 #define u8x8_GetRows(u8x8) ((u8x8)->display_info->tile_height)
+#define u8x8_GetI2CAddress(u8x8) ((u8x8)->i2c_address)
 
 
 /* list of U8x8 pins */
@@ -454,12 +468,14 @@ uint8_t u8x8_cad_EndTransfer(u8x8_t *u8x8) U8X8_NOINLINE;
 
 #define U8X8_START_TRANSFER()	(U8X8_MSG_CAD_START_TRANSFER)
 #define U8X8_END_TRANSFER()	(U8X8_MSG_CAD_END_TRANSFER)
-#define U8X8_DLY(m)			(0xfe),(m)
+#define U8X8_DLY(m)			(0xfe),(m)		/* delay in milli seconds */
 #define U8X8_END()			(0xff)
 
 void u8x8_cad_SendSequence(u8x8_t *u8x8, uint8_t const *data);
 uint8_t u8x8_cad_110(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_cad_001(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_cad_st7920_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_cad_ssd13xx_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 
 
 /*==========================================*/
@@ -480,12 +496,16 @@ uint8_t u8x8_cad_001(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_byte_SetDC(u8x8_t *u8x8, uint8_t dc) U8X8_NOINLINE;
 uint8_t u8x8_byte_SendByte(u8x8_t *u8x8, uint8_t byte) U8X8_NOINLINE;
 uint8_t u8x8_byte_SendBytes(u8x8_t *u8x8, uint8_t cnt, uint8_t *data) U8X8_NOINLINE;
+uint8_t u8x8_byte_StartTransfer(u8x8_t *u8x8);
+uint8_t u8x8_byte_EndTransfer(u8x8_t *u8x8);
 
 uint8_t u8x8_byte_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_byte_8bit_6800mode(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_byte_8bit_8080mode(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_byte_3wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+/* uint8_t u8x8_byte_st7920_sw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr); */
 uint8_t u8x8_byte_ssd13xx_sw_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_byte_sw_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 
 
 /*==========================================*/
@@ -576,12 +596,17 @@ void u8x8_Setup_TGA_LCD(u8x8_t *u8x8);
 void tga_save(const char *name);
 
 /*==========================================*/
-/* u8x8_d_uc1701_dogs102.c */
-uint8_t u8x8_d_uc1701_dogs102(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+/* u8x8_d_utf8.c */
+void u8x8_Setup_Utf8(u8x8_t *u8x8);	/* stdout UTF-8 display */
+void utf8_show(void);		/* show content of UTF-8 frame buffer */
+
 
 /*==========================================*/
-/* u8x8_d_ssd1306_128x64_noname.c */
+/* u8x8_d_XXX.c */
+uint8_t u8x8_d_uc1701_dogs102(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_ssd1306_128x64_noname(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_st7920_192x32(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_st7920_128x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 
 /*==========================================*/
 /* u8x8_8x8.c */
