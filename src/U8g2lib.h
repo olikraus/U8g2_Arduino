@@ -55,12 +55,16 @@ class U8G2 : public Print
 {
   protected:
     u8g2_t u8g2;
+    u8x8_char_cb cpp_next_cb; /*  the cpp interface has its own decoding function for the Arduino print command */
   public:
     u8g2_uint_t tx, ty;
   
-    U8G2(void) { home(); }
+    U8G2(void) { cpp_next_cb = u8x8_ascii_next; home(); }
     u8x8_t *getU8x8(void) { return u8g2_GetU8x8(&u8g2); }
     u8g2_t *getU8g2(void) { return &u8g2; }
+    
+    void enablePrintUTF8(void) { cpp_next_cb = u8x8_utf8_next; }
+    void disablePrintUTF8(void) { cpp_next_cb = u8x8_ascii_next; }
 
     /* u8x8 interface */
     uint8_t getCols(void) { return u8x8_GetCols(u8g2_GetU8x8(&u8g2)); }
@@ -80,9 +84,13 @@ class U8G2 : public Print
 
     void setContrast(uint8_t value) {
       u8g2_SetContrast(&u8g2, value); }
+      
+    void setDisplayRotation(const u8g2_cb_t *u8g2_cb) {
+      u8g2_SetDisplayRotation(&u8g2, u8g2_cb); }
+
     
     void begin(void) {
-      initDisplay(); clearDisplay(); setPowerSave(0); }
+      initDisplay(); clearDisplay(); setPowerSave(0); u8x8_utf8_init(u8g2_GetU8x8(&u8g2));}
       
 
     /* u8g2  */
@@ -121,6 +129,13 @@ class U8G2 : public Print
     void drawEllipse(u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rx, u8g2_uint_t ry, uint8_t opt = U8G2_DRAW_ALL) { u8g2_DrawEllipse(&u8g2, x0, y0, rx, ry, opt); }
     void drawFilledEllipse(u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rx, u8g2_uint_t ry, uint8_t opt = U8G2_DRAW_ALL) { u8g2_DrawFilledEllipse(&u8g2, x0, y0, rx, ry, opt); }    
 
+    /* u8g2_bitmap.c */
+    void drawBitmap(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t cnt, u8g2_uint_t h, const uint8_t *bitmap)
+      { u8g2_DrawBitmap(&u8g2, x, y, cnt, h, bitmap); }
+    void drawXBM(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, const uint8_t *bitmap)
+      { u8g2_DrawXBM(&u8g2, x, y, w, h, bitmap); }
+    
+    
     /* u8g2_polygon.c */
     void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2) 
       { u8g2_DrawTriangle(&u8g2, x0, y0, x1, y1, x2, y2); }
@@ -154,17 +169,31 @@ u8g2_uint_t u8g2_GetUTF8Width(u8g2_t *u8g2, const char *str);
     u8g2_uint_t getStrWidth(const char *s) { return u8g2_GetStrWidth(&u8g2, s); }
     u8g2_uint_t getUTF8Width(const char *s) { return u8g2_GetUTF8Width(&u8g2, s); }
     
-    void printUTF8(const char *s) { tx += u8g2_DrawUTF8(&u8g2, tx, ty, s); }
+    // not required any more, enable UTF8 for print 
+    //void printUTF8(const char *s) { tx += u8g2_DrawUTF8(&u8g2, tx, ty, s); }
 	
     
     /* virtual function for print base class */    
     size_t write(uint8_t v) {
-      tx += u8g2_DrawGlyph(&u8g2, tx, ty, v);
+      uint16_t e = cpp_next_cb(&(u8g2.u8x8), v);
+      
+      if ( e < 0x0fffe )
+	tx += u8g2_DrawGlyph(&u8g2, tx, ty, e);
       return 1;
      }
 
+    size_t write(const uint8_t *buffer, size_t size) {
+      size_t cnt = 0;
+      while( size > 0 ) {
+	cnt += write(*buffer++); 
+	size--;
+      }
+      return cnt;
+    }
+     
+
      /* LiquidCrystal compatible functions */
-    void home(void) { tx = 0; ty = 0; }
+    void home(void) { tx = 0; ty = 0;  u8x8_utf8_init(u8g2_GetU8x8(&u8g2)); }
     void clear(void) { clearBuffer(); home(); }
     void noDisplay(void) { u8g2_SetPowerSave(&u8g2, 1); }
     void display(void) { u8g2_SetPowerSave(&u8g2, 0); }

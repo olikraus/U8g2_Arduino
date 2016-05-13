@@ -53,8 +53,8 @@
   to communicate with the display hardware.
   This layer only deals with data, commands and arguments. D/C line is unknown.
     U8X8_MSG_CAD_INIT
-    U8X8_MSG_CAD_SET_I2C_ADR
-    U8X8_MSG_CAD_SET_DEVICE
+    U8X8_MSG_CAD_SET_I2C_ADR	(obsolete)
+    U8X8_MSG_CAD_SET_DEVICE (obsolete)
     U8X8_MSG_CAD_START_TRANSFER
     U8X8_MSG_CAD_SEND_CMD
     U8X8_MSG_CAD_SEND_ARG
@@ -71,8 +71,8 @@
     U8X8_MSG_BYTE_SET_DC 31
     U8X8_MSG_BYTE_START_TRANSFER
     U8X8_MSG_BYTE_END_TRANSFER
-    U8X8_MSG_BYTE_SET_I2C_ADR
-    U8X8_MSG_BYTE_SET_DEVICE
+    U8X8_MSG_BYTE_SET_I2C_ADR (obsolete)
+    U8X8_MSG_BYTE_SET_DEVICE (obsolete)
 
   GPIO and Delay
     U8X8_MSG_GPIO_INIT
@@ -120,6 +120,13 @@ extern "C" {
 /*==========================================*/
 /* U8G2 internal defines */
 
+/* the following macro returns the first value for the normal mode */
+/* or the second argument for the flip mode */
+#if U8X8_DEFAULT_FLIP_MODE == 0
+#define U8X8_IF_DEFAULT_NORMAL_OR_FLIP(normal, flipmode) (normal)
+#else
+#define U8X8_IF_DEFAULT_NORMAL_OR_FLIP(normal, flipmode) (flipmode)
+#endif
 
 #ifdef __GNUC__
 #  define U8X8_NOINLINE __attribute__((noinline))
@@ -155,7 +162,8 @@ typedef struct u8x8_display_info_struct u8x8_display_info_t;
 typedef struct u8x8_tile_struct u8x8_tile_t;
 
 typedef uint8_t (*u8x8_msg_cb)(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
-typedef uint16_t (*u8x8_char_cb)(const char **s);
+typedef uint16_t (*u8x8_char_cb)(u8x8_t *u8x8, uint8_t b);
+
 
 
 
@@ -221,7 +229,7 @@ struct u8x8_display_info_struct
   uint8_t default_x_offset;	/* default x offset for the display */
  
  /* pixel width is not used by the u8x8 procedures */
- /* instead it will be used by the u8g2 procedure, because the pixel dimension can */
+ /* instead it will be used by the u8g2 procedures, because the pixel dimension can */
  /* not always be calculated from the tile_width/_height */
  /* the following conditions must be true: */
  /* pixel_width <= tile_width*8 */
@@ -240,16 +248,21 @@ struct u8x8_display_info_struct
 struct u8x8_struct
 {
   const u8x8_display_info_t *display_info;
+  u8x8_char_cb next_cb; /*  procedure, which will be used to get the next char from the string */
   u8x8_msg_cb display_cb;
   u8x8_msg_cb cad_cb;
   u8x8_msg_cb byte_cb;
   u8x8_msg_cb gpio_and_delay_cb;
   const uint8_t *font;
-  u8x8_char_cb char_cb;		/*  procedure, which will be used to get the next char from the string */
+  uint16_t encoding;		/* encoding result for utf8 decoder in next_cb */
   uint8_t x_offset;	/* copied from info struct, can be modified in flip mode */
   uint8_t is_font_inverse_mode; 	/* 0: normal, 1: font glyphs are inverted */
   uint8_t i2c_address;	/* a valid i2c adr. Initially this is 255, but this is set to something usefull during DISPLAY_INIT */
+					/* i2c_address is the address for writing data to the display */
+					/* usually, the lowest bit must be zero for a valid address */
   uint8_t i2c_started;	/* for i2c interface */
+  uint8_t device_address;	/* this is the device address, replacement for U8X8_MSG_CAD_SET_DEVICE */
+  uint8_t utf8_state;		/* number of chars which are still to scan */
 #ifdef U8X8_USE_PINS 
   uint8_t pins[U8X8_PIN_CNT];	/* defines a pinlist: Mainly a list of pins for the Arduino Envionment, use U8X8_PIN_xxx to access */
 #endif
@@ -437,8 +450,8 @@ void u8x8_ClearDisplay(u8x8_t *u8x8);
 /* arg_int: expected cs level after processing this msg */
 #define U8X8_MSG_CAD_END_TRANSFER 25
 /* arg_int = 0: disable chip, arg_int = 1: enable chip */
-#define U8X8_MSG_CAD_SET_I2C_ADR 26
-#define U8X8_MSG_CAD_SET_DEVICE 27
+//#define U8X8_MSG_CAD_SET_I2C_ADR 26
+//#define U8X8_MSG_CAD_SET_DEVICE 27
 
 
 
@@ -489,8 +502,8 @@ uint8_t u8x8_cad_ssd13xx_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *a
 #define U8X8_MSG_BYTE_START_TRANSFER U8X8_MSG_CAD_START_TRANSFER
 #define U8X8_MSG_BYTE_END_TRANSFER U8X8_MSG_CAD_END_TRANSFER
 
-#define U8X8_MSG_BYTE_SET_I2C_ADR U8X8_MSG_CAD_SET_I2C_ADR
-#define U8X8_MSG_BYTE_SET_DEVICE U8X8_MSG_CAD_SET_DEVICE
+//#define U8X8_MSG_BYTE_SET_I2C_ADR U8X8_MSG_CAD_SET_I2C_ADR
+//#define U8X8_MSG_BYTE_SET_DEVICE U8X8_MSG_CAD_SET_DEVICE
 
 
 uint8_t u8x8_byte_SetDC(u8x8_t *u8x8, uint8_t dc) U8X8_NOINLINE;
@@ -605,13 +618,19 @@ void utf8_show(void);		/* show content of UTF-8 frame buffer */
 /* u8x8_d_XXX.c */
 uint8_t u8x8_d_uc1701_dogs102(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_ssd1306_128x64_noname(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_sh1106_128x64_noname(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st7920_192x32(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st7920_128x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 
 /*==========================================*/
 /* u8x8_8x8.c */
-uint16_t u8x8_get_encoding_from_utf8_string(const char **str);
-uint16_t u8x8_get_char_from_string(const char **str);
+
+void u8x8_utf8_init(u8x8_t *u8x8);
+uint16_t u8x8_ascii_next(u8x8_t *u8x8, uint8_t b);
+uint16_t u8x8_utf8_next(u8x8_t *u8x8, uint8_t b);
+// the following two functions are replaced by the init/next functions 
+//uint16_t u8x8_get_encoding_from_utf8_string(const char **str);
+//uint16_t u8x8_get_char_from_string(const char **str);
 
 void u8x8_SetFont(u8x8_t *u8x8, const uint8_t *font_8x8);
 void u8x8_DrawGlyph(u8x8_t *u8x8, uint8_t x, uint8_t y, uint8_t encoding);

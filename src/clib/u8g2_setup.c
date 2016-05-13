@@ -57,6 +57,16 @@ void u8g2_SetupBuffer(u8g2_t *u8g2, uint8_t *buf, uint8_t tile_buf_height, u8g2_
 #endif
 }
 
+/*
+  Usually the display rotation is set initially, but it could be done later also
+  u8g2_cb can be U8G2_R0..U8G2_R3
+*/
+void u8g2_SetDisplayRotation(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb)
+{
+  u8g2->cb = u8g2_cb;
+  u8g2->cb->update(u8g2);
+}
+
 
 /*============================================*/
 /* 
@@ -103,7 +113,7 @@ void u8g2_update_dimension_r0(u8g2_t *u8g2)
   u8g2_update_dimension_common(u8g2);
 
   u8g2->user_x0 = 0;
-  u8g2->user_x1 = u8g2->pixel_buf_width;
+  u8g2->user_x1 = u8g2->pixel_buf_width;	/* pixel_buf_width replaced with width */
   
   u8g2->user_y0 = u8g2->buf_y0;
   u8g2->user_y1 = u8g2->buf_y1;
@@ -123,7 +133,7 @@ void u8g2_update_dimension_r1(u8g2_t *u8g2)
   u8g2->user_x1 = u8g2->buf_y1;
   
   u8g2->user_y0 = 0;
-  u8g2->user_y1 = u8g2->pixel_buf_width;
+  u8g2->user_y1 = u8g2->height;	/* pixel_buf_width replaced with height (which is the real pixel width) */
   
   //printf("x0=%d x1=%d y0=%d y1=%d\n", 
    //   u8g2->user_x0, u8g2->user_x1, u8g2->user_y0, u8g2->user_y1);
@@ -134,7 +144,7 @@ void u8g2_update_dimension_r2(u8g2_t *u8g2)
   u8g2_update_dimension_common(u8g2);
 
   u8g2->user_x0 = 0;
-  u8g2->user_x1 = u8g2->pixel_buf_width;
+  u8g2->user_x1 = u8g2->width;	/* pixel_buf_width replaced with width */
   
   u8g2->user_y0 = u8g2->height - u8g2->buf_y1;
   u8g2->user_y1 = u8g2->height - u8g2->buf_y0;
@@ -154,7 +164,7 @@ void u8g2_update_dimension_r3(u8g2_t *u8g2)
   u8g2->user_x1 = u8g2->width - u8g2->buf_y0;
   
   u8g2->user_y0 = 0;
-  u8g2->user_y1 = u8g2->pixel_buf_width;
+  u8g2->user_y1 = u8g2->height;	/* pixel_buf_width replaced with height (pixel_width) */
 
 //  printf("x0=%d x1=%d y0=%d y1=%d\n", 
 //      u8g2->user_x0, u8g2->user_x1, u8g2->user_y0, u8g2->user_y1);

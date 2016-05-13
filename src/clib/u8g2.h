@@ -306,6 +306,7 @@ struct u8g2_struct
 
   uint8_t draw_color;		/* 0: clear pixel, 1: set pixel, modified and restored by font procedures */
 					/* draw_color can be used also directly by the user API */
+					
   
 #ifdef U8G2_WITH_HVLINE_COUNT
   unsigned long hv_cnt;
@@ -329,6 +330,9 @@ struct u8g2_struct
 #define u8g2_GetDisplayHeight(u8g2) ((u8g2)->height)
 #define u8g2_GetDisplayWidth(u8g2) ((u8g2)->width)
 #define u8g2_GetDrawColor(u8g2) ((u8g2)->draw_color)
+
+#define u8g2_SetI2CAddress(u8g2, address) ((u8g2_GetU8x8(u8g2))->i2c_address = (address))
+#define u8g2_GetI2CAddress(u8g2)   u8x8_GetI2CAddress(u8g2_GetU8x8(u8g2))
 
 
 /*==========================================*/
@@ -355,6 +359,7 @@ extern const u8g2_cb_t u8g2_cb_r3;
 */
 
 void u8g2_SetupBuffer(u8g2_t *u8g2, uint8_t *buf, uint8_t tile_buf_height, u8g2_draw_ll_hvline_cb ll_hvline_cb, const u8g2_cb_t *u8g2_cb);
+void u8g2_SetDisplayRotation(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
 
 /*==========================================*/
 /* u8g2_d_memory.c generated code start */
@@ -437,6 +442,13 @@ void u8g2_DrawHLine(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len)
 void u8g2_DrawVLine(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len);
 void u8g2_DrawPixel(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y);
 void u8g2_SetDrawColor(u8g2_t *u8g2, uint8_t color) U8G2_NOINLINE;  /* u8g: u8g_SetColorIndex(u8g_t *u8g, uint8_t idx); */
+
+
+/*==========================================*/
+/* u8g2_bitmap.c */
+void u8g2_DrawHorizontalBitmap(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, const uint8_t *b);
+void u8g2_DrawBitmap(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t cnt, u8g2_uint_t h, const uint8_t *bitmap);
+void u8g2_DrawXBM(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, const uint8_t *bitmap);
 
 
 /*==========================================*/

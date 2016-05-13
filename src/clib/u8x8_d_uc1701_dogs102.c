@@ -115,13 +115,9 @@ static const u8x8_display_info_t u8x8_uc1701_display_info =
   /* i2c_bus_clock_100kHz = */ 37,
   /* data_setup_time_ns = */ 30,
   /* write_pulse_width_ns = */ 40,
-  /* tile_width = */ 13,
+  /* tile_width = */ 13,		/* width of 13*8=104 pixel */
   /* tile_hight = */ 8,
-#if U8X8_DEFAULT_FLIP_MODE == 0 
-  /* default_x_offset = */ 0,
-#else
-  /* default_x_offset = */ 30,
-#endif
+  /* default_x_offset = */ U8X8_IF_DEFAULT_NORMAL_OR_FLIP(0, 30),
   /* pixel_width = */ 102,
   /* pixel_height = */ 64
 };
@@ -177,11 +173,22 @@ uint8_t u8x8_d_uc1701_dogs102(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *
       u8x8_cad_SendCmd(u8x8, 0x000 | ((x&15)));
       u8x8_cad_SendCmd(u8x8, 0x0b0 | (((u8x8_tile_t *)arg_ptr)->y_pos));
     
+      c = ((u8x8_tile_t *)arg_ptr)->cnt;
+      c *= 8;
+      ptr = ((u8x8_tile_t *)arg_ptr)->tile_ptr;
+      /* 
+	The following if condition checks the hardware limits of the uc1701 
+	controller: It is not allowed to write beyond the display limits.
+	This is in fact an issue within flip mode.
+      */
+      if ( c + x > 132u )
+      {
+	c = 132u;
+	c -= x;
+      }
       do
       {
-	c = ((u8x8_tile_t *)arg_ptr)->cnt;
-	ptr = ((u8x8_tile_t *)arg_ptr)->tile_ptr;
-	u8x8_cad_SendData(u8x8, c*8, ptr);	/* note: SendData can not handle more than 255 bytes */
+	u8x8_cad_SendData(u8x8, c, ptr);	/* note: SendData can not handle more than 255 bytes */
 	arg_int--;
       } while( arg_int > 0 );
       

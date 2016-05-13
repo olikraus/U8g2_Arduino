@@ -120,9 +120,11 @@ static void u8g2_draw_hv_line_2dir(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u
 
   y -= u8g2->tile_curr_row*8;
   
-  h = u8g2->pixel_buf_height;
-  w = u8g2->pixel_buf_width;
   
+  h = u8g2->pixel_buf_height;		// this must be the real buffer height
+  w = u8g2->pixel_buf_width;		// this could be replaced by u8g2->u8x8.display_info->pixel_width
+
+
   if ( dir == 0 )
   {
     if ( y >= h )
@@ -221,13 +223,13 @@ void u8g2_DrawVLine(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len)
 void u8g2_DrawPixel(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y)
 {
 #ifdef U8G2_WITH_INTERSECTION
-  if ( x < u8g2->user_x0 )
-    return;
-  if ( x >= u8g2->user_x1 )
-    return;
   if ( y < u8g2->user_y0 )
     return;
-  if ( y >= u8g2->user_y1 )
+  if ( y > u8g2->user_y1 )
+    return;
+  if ( x < u8g2->user_x0 )
+    return;
+  if ( x > u8g2->user_x1 )
     return;
 #endif /* U8G2_WITH_INTERSECTION */
   u8g2_DrawHVLine(u8g2, x, y, 1, 0);
@@ -248,8 +250,4 @@ void u8g2_SetDrawColor(u8g2_t *u8g2, uint8_t color)
   if ( color )
     u8g2->draw_color = 1;
 }
-
-
-
-
 
