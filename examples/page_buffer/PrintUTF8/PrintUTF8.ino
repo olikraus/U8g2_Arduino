@@ -1,6 +1,8 @@
 /*
 
-  HelloWorld.ino
+  PrintUTF8.ino
+  
+  Use the (Arduino compatible) u8g2 function "print"  to draw a text.
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -34,15 +36,8 @@
 */
 
 #include <Arduino.h>
-#include <U8g2lib.h>
-
-#ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
-#endif
-#ifdef U8X8_HAVE_HW_I2C
-#include <Wire.h>
-#endif
-
+#include <U8g2lib.h>
 
 /*
   U8glib Example Overview:
@@ -74,27 +69,24 @@
 // End of constructor list
 
 
-
-
-
-
 void setup(void) {
-  pinMode(13, OUTPUT);
-  pinMode(11, OUTPUT);
   pinMode(9, OUTPUT);
   digitalWrite(9, 0);	// default output in I2C mode for the SSD1306 test shield: set the i2c adr to 0
-  pinMode(16, OUTPUT);
-  digitalWrite(16, 0);	// default output for the ST7920 test board
 
   u8g2.begin();
+  u8g2.enablePrintUTF8();		// enable UTF8 support for the Arduino print() function
 }
 
 void loop(void) {
+  u8g2.setFont(u8g2_font_unifont_t_chinese2);  // use chinese2 for all the glyphs of "你好世界"
+  u8g2.setFontDirection(0);
   u8g2.firstPage();
   do {
-    u8g2.setFont(u8g2_font_ncenB14_tr);
-    u8g2.drawStr(0,24,"Hello World!");
+    u8g2.setCursor(0, 15);
+    u8g2.print("Hello World!");
+    u8g2.setCursor(0, 40);
+    u8g2.print("你好世界");		// Chinese "Hello World" 
   } while ( u8g2.nextPage() );
-  //delay(1000);
+  delay(1000);
 }
 

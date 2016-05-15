@@ -1,6 +1,9 @@
 /*
 
-  HelloWorld.ino
+  PrintHelloWorld.ino
+  
+  Use the (Arduino compatible) u8g2 function "print"  to draw a text.
+  Also use the Arduino F() macro to place the text into PROGMEM area.
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -34,15 +37,8 @@
 */
 
 #include <Arduino.h>
-#include <U8g2lib.h>
-
-#ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
-#endif
-#ifdef U8X8_HAVE_HW_I2C
-#include <Wire.h>
-#endif
-
+#include <U8g2lib.h>
 
 /*
   U8glib Example Overview:
@@ -53,7 +49,6 @@
   This is a page buffer example.    
 */
 
-// Please UNCOMMENT one of the contructor lines below
 // U8g2 Contructor List (Picture Loop Page Buffer)
 // The complete list is available here: https://github.com/olikraus/u8g2/wiki/u8g2setupcpp
 //U8G2_SSD1306_128X64_NONAME_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
@@ -74,27 +69,20 @@
 // End of constructor list
 
 
-
-
-
-
 void setup(void) {
-  pinMode(13, OUTPUT);
-  pinMode(11, OUTPUT);
   pinMode(9, OUTPUT);
   digitalWrite(9, 0);	// default output in I2C mode for the SSD1306 test shield: set the i2c adr to 0
-  pinMode(16, OUTPUT);
-  digitalWrite(16, 0);	// default output for the ST7920 test board
 
   u8g2.begin();
 }
 
 void loop(void) {
+  u8g2.setFont(u8g2_font_ncenB14_tr);
   u8g2.firstPage();
   do {
-    u8g2.setFont(u8g2_font_ncenB14_tr);
-    u8g2.drawStr(0,24,"Hello World!");
+    u8g2.setCursor(0, 20);
+    u8g2.print(F("Hello World!"));
   } while ( u8g2.nextPage() );
-  //delay(1000);
+  delay(1000);
 }
 
