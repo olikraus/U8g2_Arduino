@@ -92,11 +92,13 @@
 #define U8X8_WITH_SET_CONTRAST
 
 /* Undefine this to remove u8x8_SetFlipMode function */
-#define U8X8_WITH_SET_FLIP_MODE
+/* 26 May 2016: Obsolete */
+//#define U8X8_WITH_SET_FLIP_MODE
 
 /* Select 0 or 1 for the default flip mode. This is not affected by U8X8_WITH_FLIP_MODE */
 /* Note: Not all display types support a mirror functon for the frame buffer */
-#define U8X8_DEFAULT_FLIP_MODE 0
+/* 26 May 2016: Obsolete */
+//#define U8X8_DEFAULT_FLIP_MODE 0
 
 /*==========================================*/
 /* Includes */
@@ -122,11 +124,14 @@ extern "C" {
 
 /* the following macro returns the first value for the normal mode */
 /* or the second argument for the flip mode */
+
+/* 26 May 2016: Obsolete
 #if U8X8_DEFAULT_FLIP_MODE == 0
 #define U8X8_IF_DEFAULT_NORMAL_OR_FLIP(normal, flipmode) (normal)
 #else
 #define U8X8_IF_DEFAULT_NORMAL_OR_FLIP(normal, flipmode) (flipmode)
 #endif
+*/
 
 #ifdef __GNUC__
 #  define U8X8_NOINLINE __attribute__((noinline))
@@ -226,7 +231,8 @@ struct u8x8_display_info_struct
   uint8_t tile_width;
   uint8_t tile_height;
 
-  uint8_t default_x_offset;	/* default x offset for the display */
+  uint8_t default_x_offset;		/* default x offset for the display */
+  uint8_t flipmode_x_offset;	/* x offset, if flip mode is enabled */
  
  /* pixel width is not used by the u8x8 procedures */
  /* instead it will be used by the u8g2 procedures, because the pixel dimension can */
@@ -238,39 +244,6 @@ struct u8x8_display_info_struct
   uint16_t pixel_height;
 };
 
-
-
-#ifdef U8X8_USE_PINS 
-#define U8X8_PIN_CNT 14
-#define U8X8_PIN_NONE 255
-#endif
-
-struct u8x8_struct
-{
-  const u8x8_display_info_t *display_info;
-  u8x8_char_cb next_cb; /*  procedure, which will be used to get the next char from the string */
-  u8x8_msg_cb display_cb;
-  u8x8_msg_cb cad_cb;
-  u8x8_msg_cb byte_cb;
-  u8x8_msg_cb gpio_and_delay_cb;
-  const uint8_t *font;
-  uint16_t encoding;		/* encoding result for utf8 decoder in next_cb */
-  uint8_t x_offset;	/* copied from info struct, can be modified in flip mode */
-  uint8_t is_font_inverse_mode; 	/* 0: normal, 1: font glyphs are inverted */
-  uint8_t i2c_address;	/* a valid i2c adr. Initially this is 255, but this is set to something usefull during DISPLAY_INIT */
-					/* i2c_address is the address for writing data to the display */
-					/* usually, the lowest bit must be zero for a valid address */
-  uint8_t i2c_started;	/* for i2c interface */
-  uint8_t device_address;	/* this is the device address, replacement for U8X8_MSG_CAD_SET_DEVICE */
-  uint8_t utf8_state;		/* number of chars which are still to scan */
-#ifdef U8X8_USE_PINS 
-  uint8_t pins[U8X8_PIN_CNT];	/* defines a pinlist: Mainly a list of pins for the Arduino Envionment, use U8X8_PIN_xxx to access */
-#endif
-};
-
-#define u8x8_GetCols(u8x8) ((u8x8)->display_info->tile_width)
-#define u8x8_GetRows(u8x8) ((u8x8)->display_info->tile_height)
-#define u8x8_GetI2CAddress(u8x8) ((u8x8)->i2c_address)
 
 
 /* list of U8x8 pins */
@@ -293,8 +266,61 @@ struct u8x8_struct
 #define U8X8_PIN_I2C_CLOCK 12	/* 1 = Input/high impedance, 0 = drive low */
 #define U8X8_PIN_I2C_DATA 13	/* 1 = Input/high impedance, 0 = drive low */
 
+#define U8X8_PIN_OUTPUT_CNT 14
+
+#define U8X8_PIN_MENU_SELECT 14
+#define U8X8_PIN_MENU_NEXT 15
+#define U8X8_PIN_MENU_PREV 16
+#define U8X8_PIN_MENU_HOME 17
+
+#define U8X8_PIN_INPUT_CNT 4
+
+#ifdef U8X8_USE_PINS 
+#define U8X8_PIN_CNT (U8X8_PIN_OUTPUT_CNT+U8X8_PIN_INPUT_CNT)
+#define U8X8_PIN_NONE 255
+#endif
+
+struct u8x8_struct
+{
+  const u8x8_display_info_t *display_info;
+  u8x8_char_cb next_cb; /*  procedure, which will be used to get the next char from the string */
+  u8x8_msg_cb display_cb;
+  u8x8_msg_cb cad_cb;
+  u8x8_msg_cb byte_cb;
+  u8x8_msg_cb gpio_and_delay_cb;
+  const uint8_t *font;
+  uint16_t encoding;		/* encoding result for utf8 decoder in next_cb */
+  uint8_t x_offset;	/* copied from info struct, can be modified in flip mode */
+  uint8_t is_font_inverse_mode; 	/* 0: normal, 1: font glyphs are inverted */
+  uint8_t i2c_address;	/* a valid i2c adr. Initially this is 255, but this is set to something usefull during DISPLAY_INIT */
+					/* i2c_address is the address for writing data to the display */
+					/* usually, the lowest bit must be zero for a valid address */
+  uint8_t i2c_started;	/* for i2c interface */
+  uint8_t device_address;	/* this is the device address, replacement for U8X8_MSG_CAD_SET_DEVICE */
+  uint8_t utf8_state;		/* number of chars which are still to scan */
+  uint8_t gpio_result;	/* return value from the gpio call (only for MENU keys at the moment) */ 
+  uint8_t debounce_default_pin_state;
+  uint8_t debounce_last_pin_state;
+  uint8_t debounce_state;
+  uint8_t debounce_result_msg;	/* result msg or event after debounce */
+#ifdef U8X8_USE_PINS 
+  uint8_t pins[U8X8_PIN_CNT];	/* defines a pinlist: Mainly a list of pins for the Arduino Envionment, use U8X8_PIN_xxx to access */
+#endif
+};
+
+#define u8x8_GetCols(u8x8) ((u8x8)->display_info->tile_width)
+#define u8x8_GetRows(u8x8) ((u8x8)->display_info->tile_height)
+#define u8x8_GetI2CAddress(u8x8) ((u8x8)->i2c_address)
+#define u8x8_SetGPIOResult(u8x8, val) ((u8x8)->gpio_result = (val))
+
+
+
 #ifdef U8X8_USE_PINS 
 #define u8x8_SetPin(u8x8,pin,val) (u8x8)->pins[pin] = (val)
+#define u8x8_SetMenuSelectPin(u8x8, val) u8x8_SetPin((u8x8),U8X8_PIN_MENU_SELECT,(val))
+#define u8x8_SetMenuNextPin(u8x8, val) u8x8_SetPin((u8x8),U8X8_PIN_MENU_NEXT,(val))
+#define u8x8_SetMenuPrevPin(u8x8, val) u8x8_SetPin((u8x8),U8X8_PIN_MENU_PREV,(val))
+#define u8x8_SetMenuHomePin(u8x8, val) u8x8_SetPin((u8x8),U8X8_PIN_MENU_HOME,(val))
 #endif
 
 
@@ -546,6 +572,7 @@ uint8_t u8x8_byte_sw_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_p
 
 #define U8X8_MSG_GPIO(x) (64+(x))
 #ifdef U8X8_USE_PINS 
+#define u8x8_GetPinIndex(u8x8, msg) ((msg)&0x3f)
 #define u8x8_GetPinValue(u8x8, msg) ((u8x8)->pins[(msg)&0x3f])
 #endif
 
@@ -566,6 +593,11 @@ uint8_t u8x8_byte_sw_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_p
 #define U8X8_MSG_GPIO_I2C_CLOCK	U8X8_MSG_GPIO(U8X8_PIN_I2C_CLOCK)
 #define U8X8_MSG_GPIO_I2C_DATA		U8X8_MSG_GPIO(U8X8_PIN_I2C_DATA)
 
+/* these message expect the return value in u8x8->gpio_result */
+#define U8X8_MSG_GPIO_MENU_SELECT	U8X8_MSG_GPIO(U8X8_PIN_MENU_SELECT)
+#define U8X8_MSG_GPIO_MENU_NEXT	U8X8_MSG_GPIO(U8X8_PIN_MENU_NEXT)
+#define U8X8_MSG_GPIO_MENU_PREV	U8X8_MSG_GPIO(U8X8_PIN_MENU_PREV)
+#define U8X8_MSG_GPIO_MENU_HOME	U8X8_MSG_GPIO(U8X8_PIN_MENU_HOME)
 
 
 #define u8x8_gpio_Init(u8x8) ((u8x8)->gpio_and_delay_cb((u8x8), U8X8_MSG_GPIO_AND_DELAY_INIT, 0, NULL ))
@@ -591,7 +623,10 @@ void u8x8_gpio_call(u8x8_t *u8x8, uint8_t msg, uint8_t arg) U8X8_NOINLINE;
 //void u8x8_gpio_Delay(u8x8_t *u8x8, uint8_t msg, uint8_t dly) U8X8_NOINLINE;
 
 
-
+/*==========================================*/
+/* u8x8_debounce.c */
+/* return U8X8_MSG_GPIO_MENU_xxxxx messages */
+uint8_t u8x8_GetMenuEvent(u8x8_t *u8x8);
 
 /*==========================================*/
 /* u8x8_d_stdio.c */
@@ -616,12 +651,15 @@ void utf8_show(void);		/* show content of UTF-8 frame buffer */
 
 /*==========================================*/
 /* u8x8_d_XXX.c */
-uint8_t u8x8_d_uc1701_dogs102(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_uc1701_ea_dogs102(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_ssd1306_128x64_noname(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_sh1106_128x64_noname(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st7920_192x32(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st7920_128x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_ssd1306_128x32_univision(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_ls013b7dh03_128x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_st7565_ea_dogm128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_st7565_nhd_c12832(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 
 
 /*==========================================*/
@@ -637,9 +675,59 @@ uint16_t u8x8_utf8_next(u8x8_t *u8x8, uint8_t b);
 void u8x8_SetFont(u8x8_t *u8x8, const uint8_t *font_8x8);
 void u8x8_DrawGlyph(u8x8_t *u8x8, uint8_t x, uint8_t y, uint8_t encoding);
 uint8_t u8x8_DrawString(u8x8_t *u8x8, uint8_t x, uint8_t y, const char *s);
-uint8_t u8x8_DrawUTF8(u8x8_t *u8x8, uint8_t x, uint8_t y, const char *s);
+uint8_t u8x8_DrawUTF8(u8x8_t *u8x8, uint8_t x, uint8_t y, const char *s);	/* return number of glyps */
 uint8_t u8x8_GetUTF8Len(u8x8_t *u8x8, const char *s);
 #define u8x8_SetInverseFont(u8x8, b) (u8x8)->is_font_inverse_mode = (b)
+
+/*==========================================*/
+/* itoa procedures */
+const char *u8x8_u8toa(uint8_t v, uint8_t d);
+const char *u8x8_u16toa(uint16_t v, uint8_t d);
+
+
+/*==========================================*/
+/* u8x8_string.c */
+
+uint8_t u8x8_GetStringLineCnt(const char *str);  /* return 0 for str==NULL */
+const char *u8x8_GetStringLineStart(uint8_t line_idx, const char *str );
+void u8x8_CopyStringLine(char *dest, uint8_t line_idx, const char *str);
+/* draw one line, consider \t for center */
+uint8_t u8x8_DrawUTF8Line(u8x8_t *u8x8, uint8_t x, uint8_t y, uint8_t w, const char *s);
+/* draw multiple lines, handle \t */
+uint8_t u8x8_DrawUTF8Lines(u8x8_t *u8x8, uint8_t x, uint8_t y, uint8_t w, const char *s);
+
+/*==========================================*/
+
+/* u8x8_selection_list.c */
+struct _u8sl_struct
+{
+  uint8_t visible;		/* number of visible elements in the menu */
+  uint8_t total;			/* total number of elements in the menu */
+  uint8_t first_pos;		/* position of the first visible line */
+  uint8_t current_pos;	/* current cursor position, starts at 0 */  
+  
+  uint8_t x;		/* u8x8 only, not used in u8g2 */
+  uint8_t y;		/* u8x8 only, not used in u8g2 */
+};
+typedef struct _u8sl_struct u8sl_t;
+
+typedef void (*u8x8_sl_cb)(u8x8_t *u8x8, u8sl_t *u8sl, uint8_t idx, const void *aux);
+
+void u8sl_Next(u8sl_t *u8sl);
+void u8sl_Prev(u8sl_t *u8sl);
+
+uint8_t u8x8_UserInterfaceSelectionList(u8x8_t *u8x8, const char *title, uint8_t start_pos, const char *sl);
+
+/*==========================================*/
+
+/* u8x8_message.c  */
+uint8_t u8x8_UserInterfaceMessage(u8x8_t *u8x8, const char *title1, const char *title2, const char *title3, const char *buttons);
+
+/*==========================================*/
+
+/* u8x8_input_value.c  */
+
+uint8_t u8x8_UserInterfaceInputValue(u8x8_t *u8x8, const char *title, const char *pre, uint8_t *value, uint8_t lo, uint8_t hi, uint8_t digits, const char *post);
 
 
 /*==========================================*/
