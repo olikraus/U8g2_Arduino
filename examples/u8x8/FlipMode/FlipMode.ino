@@ -72,21 +72,21 @@
 
 void setup(void)
 {
-  pinMode(16, OUTPUT);
-  digitalWrite(16, 0);
   u8x8.begin();
-  u8x8.setPowerSave(0);
 }
 
 void loop(void)
 {
   u8x8.setFont(u8x8_font_chroma48medium8_r);
-  u8x8.drawString(0,1,"Hello World!");
-  /*
-  delay(1000);
-  u8x8.setPowerSave(1);
-  delay(1000);
-  u8x8.setPowerSave(0);
-  delay(1000);
-  */
+  
+  u8x8.clear();
+  u8x8.setFlipMode(0);
+  u8x8.drawString(0,0,"FlipMode 0");
+  delay(1500);
+
+  u8x8.clear();
+  u8x8.setFlipMode(1);
+  u8x8.drawString(0,0,"FlipMode 1");
+  delay(1500);
+
 }
