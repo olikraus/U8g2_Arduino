@@ -187,6 +187,11 @@ class U8G2 : public Print
     void setFontPosTop(void) { u8g2_SetFontPosTop(&u8g2); }
     void setFontPosCenter(void) { u8g2_SetFontPosCenter(&u8g2); }
 
+    void setFontRefHeightText(void) { u8g2_SetFontRefHeightText(&u8g2); }
+    void setFontRefHeightExtendedText(void) { u8g2_SetFontRefHeightExtendedText(&u8g2); }
+    void setFontRefHeightAll(void) { u8g2_SetFontRefHeightAll(&u8g2); }
+    
+
 /*
 uint8_t u8g2_IsGlyph(u8g2_t *u8g2, uint16_t requested_encoding);
 int8_t u8g2_GetGlyphWidth(u8g2_t *u8g2, uint16_t requested_encoding);
@@ -222,11 +227,26 @@ u8g2_uint_t u8g2_GetUTF8Width(u8g2_t *u8g2, const char *str);
       }
       return cnt;
     }
-     
+ 
+
+     /* user interface */
+/*
+uint8_t u8g2_UserInterfaceSelectionList(u8g2_t *u8g2, const char *title, uint8_t start_pos, const char *sl);
+uint8_t u8g2_UserInterfaceMessage(u8g2_t *u8g2, const char *title1, const char *title2, const char *title3, const char *buttons);
+uint8_t u8g2_UserInterfaceInputValue(u8g2_t *u8g2, const char *title, const char *pre, uint8_t *value, uint8_t lo, uint8_t hi, uint8_t digits, const char *post);
+*/
+
+    uint8_t userInterfaceSelectionList(const char *title, uint8_t start_pos, const char *sl) {
+      return u8g2_UserInterfaceSelectionList(&u8g2, title, start_pos, sl); }
+    uint8_t userInterfaceMessage(const char *title1, const char *title2, const char *title3, const char *buttons) {
+      return u8g2_UserInterfaceMessage(&u8g2, title1, title2, title3, buttons); }
+    uint8_t userInterfaceInputValue(const char *title, const char *pre, uint8_t *value, uint8_t lo, uint8_t hi, uint8_t digits, const char *post) {
+      return u8g2_UserInterfaceInputValue(&u8g2, title, pre, value, lo, hi, digits, post); }
+    
 
      /* LiquidCrystal compatible functions */
     void home(void) { tx = 0; ty = 0;  u8x8_utf8_init(u8g2_GetU8x8(&u8g2)); }
-    void clear(void) { clearBuffer(); home(); }
+    void clear(void) { home(); clearDisplay(); clearBuffer();  }
     void noDisplay(void) { u8g2_SetPowerSave(&u8g2, 1); }
     void display(void) { u8g2_SetPowerSave(&u8g2, 0); }
     void setCursor(u8g2_uint_t x, u8g2_uint_t y) { tx = x; ty = y; }
@@ -634,6 +654,42 @@ class U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C : public U8G2 {
   public: U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C(const u8g2_cb_t *rotation, uint8_t reset = U8X8_PIN_NONE) : U8G2() {
     u8g2_Setup_ssd1306_i2c_128x32_univision_f(&u8g2, rotation, u8x8_byte_arduino_hw_i2c, u8x8_gpio_and_delay_arduino);
     u8x8_SetPin_SSD13xx_HW_I2C(getU8x8(), reset);
+  }
+};
+class U8G2_LD7032_60X32_1_4W_SW_SPI : public U8G2 {
+  public: U8G2_LD7032_60X32_1_4W_SW_SPI(const u8g2_cb_t *rotation, uint8_t clock, uint8_t data, uint8_t cs, uint8_t dc, uint8_t reset = U8X8_PIN_NONE) : U8G2() {
+    u8g2_Setup_ld7032_60x32_1(&u8g2, rotation, u8x8_byte_arduino_4wire_sw_spi, u8x8_gpio_and_delay_arduino);
+    u8x8_SetPin_4Wire_SW_SPI(getU8x8(), clock, data, cs, dc, reset);
+  }
+};
+class U8G2_LD7032_60X32_1_4W_HW_SPI : public U8G2 {
+  public: U8G2_LD7032_60X32_1_4W_HW_SPI(const u8g2_cb_t *rotation, uint8_t cs, uint8_t dc, uint8_t reset = U8X8_PIN_NONE) : U8G2() {
+    u8g2_Setup_ld7032_60x32_1(&u8g2, rotation, u8x8_byte_arduino_hw_spi, u8x8_gpio_and_delay_arduino);
+    u8x8_SetPin_4Wire_HW_SPI(getU8x8(), cs, dc, reset);
+  }
+};
+class U8G2_LD7032_60X32_2_4W_SW_SPI : public U8G2 {
+  public: U8G2_LD7032_60X32_2_4W_SW_SPI(const u8g2_cb_t *rotation, uint8_t clock, uint8_t data, uint8_t cs, uint8_t dc, uint8_t reset = U8X8_PIN_NONE) : U8G2() {
+    u8g2_Setup_ld7032_60x32_2(&u8g2, rotation, u8x8_byte_arduino_4wire_sw_spi, u8x8_gpio_and_delay_arduino);
+    u8x8_SetPin_4Wire_SW_SPI(getU8x8(), clock, data, cs, dc, reset);
+  }
+};
+class U8G2_LD7032_60X32_2_4W_HW_SPI : public U8G2 {
+  public: U8G2_LD7032_60X32_2_4W_HW_SPI(const u8g2_cb_t *rotation, uint8_t cs, uint8_t dc, uint8_t reset = U8X8_PIN_NONE) : U8G2() {
+    u8g2_Setup_ld7032_60x32_2(&u8g2, rotation, u8x8_byte_arduino_hw_spi, u8x8_gpio_and_delay_arduino);
+    u8x8_SetPin_4Wire_HW_SPI(getU8x8(), cs, dc, reset);
+  }
+};
+class U8G2_LD7032_60X32_F_4W_SW_SPI : public U8G2 {
+  public: U8G2_LD7032_60X32_F_4W_SW_SPI(const u8g2_cb_t *rotation, uint8_t clock, uint8_t data, uint8_t cs, uint8_t dc, uint8_t reset = U8X8_PIN_NONE) : U8G2() {
+    u8g2_Setup_ld7032_60x32_f(&u8g2, rotation, u8x8_byte_arduino_4wire_sw_spi, u8x8_gpio_and_delay_arduino);
+    u8x8_SetPin_4Wire_SW_SPI(getU8x8(), clock, data, cs, dc, reset);
+  }
+};
+class U8G2_LD7032_60X32_F_4W_HW_SPI : public U8G2 {
+  public: U8G2_LD7032_60X32_F_4W_HW_SPI(const u8g2_cb_t *rotation, uint8_t cs, uint8_t dc, uint8_t reset = U8X8_PIN_NONE) : U8G2() {
+    u8g2_Setup_ld7032_60x32_f(&u8g2, rotation, u8x8_byte_arduino_hw_spi, u8x8_gpio_and_delay_arduino);
+    u8x8_SetPin_4Wire_HW_SPI(getU8x8(), cs, dc, reset);
   }
 };
 class U8G2_ST7920_192X32_1_8080 : public U8G2 {
