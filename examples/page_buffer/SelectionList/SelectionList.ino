@@ -1,6 +1,6 @@
 /*
 
-  FlipMode.ino
+  SelectionList.ino
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -43,11 +43,6 @@
 #include <Wire.h>
 #endif
 
-/*
-  Preconditions:
-  Uno with DOGS102 Shield
-*/
-
 // Please UNCOMMENT one of the contructor lines below
 // U8g2 Contructor List (Picture Loop Page Buffer)
 // The complete list is available here: https://github.com/olikraus/u8g2/wiki/u8g2setupcpp
@@ -83,55 +78,48 @@
 // End of constructor list
 
 
-
-
-
-
-
 void setup(void) {
-  u8g2.begin();
-  u8g2.setFont(u8g2_font_6x10_tr);
+  
+  // DOGS102 Shield (http://shieldlist.org/controlconnection/dogs102)
+  // u8x8.begin(/* menu_select_pin= */ 5, /* menu_next_pin= */ 4, /* menu_prev_pin= */ 2, /* menu_home_pin= */ 3);
+  
+  // DOGM128 Shield (http://shieldlist.org/schmelle2/dogm128) + DOGXL160 Shield
+  // u8x8.begin(/* menu_select_pin= */ 2, /* menu_next_pin= */ 3, /* menu_prev_pin= */ 7, /* menu_home_pin= */ 8);
+  
+  // Arduboy
+  //u8g2.begin(/*Select=*/ A0, /*Right/Next=*/ 5, /*Left/Prev=*/ 9, /*Up=*/ 8, /*Down=*/ 10, /*Home/Cancel=*/ A1); // Arduboy DevKit
+  u8g2.begin(/*Select=*/ 7, /*Right/Next=*/ A1, /*Left/Prev=*/ A2, /*Up=*/ A0, /*Down=*/ A3, /*Home/Cancel=*/ 8); // Arduboy 10 (Production)
+
+  u8g2.setFont(u8g2_font_6x12_tr);
 }
 
+const char *string_list = 
+  "Altocumulus\n"
+  "Altostratus\n"
+  "Cirrocumulus\n"
+  "Cirrostratus\n"
+  "Cirrus\n"
+  "Cumulonimbus\n"
+  "Cumulus\n"
+  "Nimbostratus\n"
+  "Stratocumulus\n"
+  "Stratus";
 
-void draw(const char *s)
-{
-  u8g2.firstPage();
-  do {
-    u8g2.drawStr(0,15,"Hello World!");    
-    u8g2.drawStr(0,30,s);    
-    u8g2.drawFrame(0,0,u8g2.getDisplayWidth(),u8g2.getDisplayHeight() );
-  } while ( u8g2.nextPage() );
-  delay(2000);
-}
+uint8_t current_selection = 0;
 
 
 void loop(void) {
 
+  current_selection = u8g2.userInterfaceSelectionList(
+    "Cloud Types",
+    current_selection, 
+    string_list);
 
-  u8g2.setDisplayRotation(U8G2_R0);
-  u8g2.setFlipMode(0);
-  draw("R0,F0");
-  u8g2.setFlipMode(1);
-  draw("R0,F1");
-
-  u8g2.setDisplayRotation(U8G2_R1);
-  u8g2.setFlipMode(0);
-  draw("R1,F0");
-  u8g2.setFlipMode(1);
-  draw("R1,F1");
-
-  u8g2.setDisplayRotation(U8G2_R2);
-  u8g2.setFlipMode(0);
-  draw("R2,F0");
-  u8g2.setFlipMode(1);
-  draw("R2,F1");
-
-  u8g2.setDisplayRotation(U8G2_R3);
-  u8g2.setFlipMode(0);
-  draw("R3,F0");
-  u8g2.setFlipMode(1);
-  draw("R3,F1");
-
+  u8g2.userInterfaceMessage(
+      "Selection:", 
+      u8x8_GetStringLineStart(current_selection, string_list ),
+      "",
+      " ok \n cancel ");
 }
+
 

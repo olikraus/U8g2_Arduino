@@ -1,6 +1,8 @@
 /*
 
-  U8g2Logo.ino
+  PrintUTF8.ino
+  
+  Use the (Arduino compatible) u8g2 function "print"  to draw a text.
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -43,13 +45,13 @@
 #include <Wire.h>
 #endif
 
+
 /*
   U8glib Example Overview:
     Frame Buffer Examples: clearBuffer/sendBuffer. Fast, but may not work with all Arduino boards because of RAM consumption
     Page Buffer Examples: firstPage/nextPage. Less RAM usage, should work with all Arduino boards.
     U8x8 Text Only Example: No RAM usage, direct communication with display controller. No graphics, 8x8 Text only.
     
-  This is a frame buffer example.    
 */
 
 // Please UNCOMMENT one of the contructor lines below
@@ -84,82 +86,25 @@
 
 // End of constructor list
 
-//#define MINI_LOGO
+
+
+
 
 void setup(void) {
-  pinMode(9, OUTPUT);
-  digitalWrite(9, 0);	// default output in I2C mode for the SSD1306 test shield: set the i2c adr to 0
-
   u8g2.begin();
-}
-
-void drawLogo(void)
-{
-    u8g2.setFontMode(1);	// Transparent
-#ifdef MINI_LOGO
-
-    u8g2.setFontDirection(0);
-    u8g2.setFont(u8g2_font_inb16_mf);
-    u8g2.drawStr(0, 22, "U");
-    
-    u8g2.setFontDirection(1);
-    u8g2.setFont(u8g2_font_inb19_mn);
-    u8g2.drawStr(14,8,"8");
-    
-    u8g2.setFontDirection(0);
-    u8g2.setFont(u8g2_font_inb16_mf);
-    u8g2.drawStr(36,22,"g");
-    u8g2.drawStr(48,22,"\xb2");
-    
-    u8g2.drawHLine(2, 25, 34);
-    u8g2.drawHLine(3, 26, 34);
-    u8g2.drawVLine(32, 22, 12);
-    u8g2.drawVLine(33, 23, 12);
-#else
-
-    u8g2.setFontDirection(0);
-    u8g2.setFont(u8g2_font_inb24_mf);
-    u8g2.drawStr(0, 30, "U");
-    
-    u8g2.setFontDirection(1);
-    u8g2.setFont(u8g2_font_inb30_mn);
-    u8g2.drawStr(21,8,"8");
-        
-    u8g2.setFontDirection(0);
-    u8g2.setFont(u8g2_font_inb24_mf);
-    u8g2.drawStr(51,30,"g");
-    u8g2.drawStr(67,30,"\xb2");
-    
-    u8g2.drawHLine(2, 35, 47);
-    u8g2.drawHLine(3, 36, 47);
-    u8g2.drawVLine(45, 32, 12);
-    u8g2.drawVLine(46, 33, 12);
-    
-#endif
-}
-
-void drawURL(void)
-{
-#ifndef MINI_LOGO
-  u8g2.setFont(u8g2_font_4x6_tr);
-  if ( u8g2.getDisplayHeight() < 59 )
-  {
-    u8g2.drawStr(89,20,"github.com");
-    u8g2.drawStr(73,29,"/olikraus/u8g2");
-  }
-  else
-  {
-    u8g2.drawStr(1,54,"github.com/olikraus/u8g2");
-  }
-#endif
+  u8g2.enableUTF8Print();		// enable UTF8 support for the Arduino print() function
 }
 
 void loop(void) {
+  u8g2.setFont(u8g2_font_unifont_t_chinese2);  // use chinese2 for all the glyphs of "你好世界"
+  u8g2.setFontDirection(0);
   u8g2.clearBuffer();
-  drawLogo();
-  drawURL();
+  u8g2.setCursor(0, 15);
+  u8g2.print("Hello World!");
+  u8g2.setCursor(0, 40);
+  u8g2.print("你好世界");		// Chinese "Hello World" 
   u8g2.sendBuffer();
+  
   delay(1000);
 }
-
 

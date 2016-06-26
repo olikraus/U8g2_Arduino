@@ -34,8 +34,14 @@
 */
 
 #include <Arduino.h>
-#include <SPI.h>
 #include <U8g2lib.h>
+
+#ifdef U8X8_HAVE_HW_SPI
+#include <SPI.h>
+#endif
+#ifdef U8X8_HAVE_HW_I2C
+#include <Wire.h>
+#endif
 
 /*
   U8glib Example Overview:
@@ -79,17 +85,14 @@
 
 
 void setup(void) {
-  pinMode(9, OUTPUT);
-  digitalWrite(9, 0);	// default output in I2C mode for the SSD1306 test shield: set the i2c adr to 0
-
   u8g2.begin();
 }
 
 void loop(void) {
-  u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_ncenB14_tr);
-  u8g2.drawStr(0,20,"Hello World!");
-  u8g2.sendBuffer();
+  u8g2.clearBuffer();					// clear the internal menory
+  u8g2.setFont(u8g2_font_ncenB14_tr);	// choose a suitable font
+  u8g2.drawStr(0,20,"Hello World!");	// write something to the internal memory
+  u8g2.sendBuffer();					// transfer internal memory to the display
   delay(1000);
 }
 
