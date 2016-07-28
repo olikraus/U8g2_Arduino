@@ -211,10 +211,15 @@ struct u8x8_display_info_struct
   /* AVR: below 70: DIV2, 8 MHz, >= 70 --> 4MHz clock (DIV4) */
   uint8_t sck_pulse_width_ns;		/* UC1701: 50ns */
   
-  /* data takeover edge:  0=falling edge, 1=rising edge*/
-  /* initial default value for sck is low (0) for falling edge and high for rising edge */
-  /* this means, default value is identical to sck_takeover_edge */
-  uint8_t sck_takeover_edge;		/* UC1601: rising edge (1) */
+  /* previous name "sck_takeover_edge" renamed to "spi_mode" */
+  /* bit 0 of spi_mode is equal to the value of the previous variable sck_takeover_edge */ 
+  /* SPI has four clock modes: */
+  /*   0: clock active high, data out on falling edge */
+  /*   1: clock active high, data out on rising edge */
+  /*   2: clock active low, data out on rising edge */
+  /*   3: clock active low, data out on falling edge */
+  /* most displays have clock mode 1 */
+  uint8_t spi_mode;
   
   /* == I2C == */
   uint8_t i2c_bus_clock_100kHz;		/* UC1601: 1000000000/275 = 37 *100k */
@@ -314,7 +319,8 @@ struct u8x8_struct
 #define u8x8_GetRows(u8x8) ((u8x8)->display_info->tile_height)
 #define u8x8_GetI2CAddress(u8x8) ((u8x8)->i2c_address)
 #define u8x8_SetGPIOResult(u8x8, val) ((u8x8)->gpio_result = (val))
-
+#define u8x8_GetSPIClockPhase(u8x8) ((u8x8)->display_info->spi_mode & 0x01)  /* this returns "sck_takeover_edge" */
+#define u8x8_GetSPIClockPolarity(u8x8) (((u8x8)->display_info->spi_mode & 0x02) >> 1)
 
 
 #ifdef U8X8_USE_PINS 
@@ -516,6 +522,7 @@ uint8_t u8x8_cad_EndTransfer(u8x8_t *u8x8) U8X8_NOINLINE;
 #define U8X8_END()			(0xff)
 
 void u8x8_cad_SendSequence(u8x8_t *u8x8, uint8_t const *data);
+uint8_t u8x8_cad_empty(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_cad_110(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_cad_001(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_cad_011(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
@@ -675,6 +682,7 @@ uint8_t u8x8_d_t6963_240x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *a
 uint8_t u8x8_d_t6963_128x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_ssd1322_256x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_t6963_256x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_a2printer_384x240(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 
 
 /*==========================================*/
@@ -785,6 +793,18 @@ extern const uint8_t u8x8_font_pcsenior_f[] U8X8_FONT_SECTION("u8x8_font_pcsenio
 extern const uint8_t u8x8_font_pcsenior_r[] U8X8_FONT_SECTION("u8x8_font_pcsenior_r");
 extern const uint8_t u8x8_font_pcsenior_n[] U8X8_FONT_SECTION("u8x8_font_pcsenior_n");
 extern const uint8_t u8x8_font_pcsenior_u[] U8X8_FONT_SECTION("u8x8_font_pcsenior_u");
+extern const uint8_t u8x8_font_pxplusibmcgathin_f[] U8X8_FONT_SECTION("u8x8_font_pxplusibmcgathin_f");
+extern const uint8_t u8x8_font_pxplusibmcgathin_r[] U8X8_FONT_SECTION("u8x8_font_pxplusibmcgathin_r");
+extern const uint8_t u8x8_font_pxplusibmcgathin_n[] U8X8_FONT_SECTION("u8x8_font_pxplusibmcgathin_n");
+extern const uint8_t u8x8_font_pxplusibmcgathin_u[] U8X8_FONT_SECTION("u8x8_font_pxplusibmcgathin_u");
+extern const uint8_t u8x8_font_pxplusibmcga_f[] U8X8_FONT_SECTION("u8x8_font_pxplusibmcga_f");
+extern const uint8_t u8x8_font_pxplusibmcga_r[] U8X8_FONT_SECTION("u8x8_font_pxplusibmcga_r");
+extern const uint8_t u8x8_font_pxplusibmcga_n[] U8X8_FONT_SECTION("u8x8_font_pxplusibmcga_n");
+extern const uint8_t u8x8_font_pxplusibmcga_u[] U8X8_FONT_SECTION("u8x8_font_pxplusibmcga_u");
+extern const uint8_t u8x8_font_pxplustandynewtv_f[] U8X8_FONT_SECTION("u8x8_font_pxplustandynewtv_f");
+extern const uint8_t u8x8_font_pxplustandynewtv_r[] U8X8_FONT_SECTION("u8x8_font_pxplustandynewtv_r");
+extern const uint8_t u8x8_font_pxplustandynewtv_n[] U8X8_FONT_SECTION("u8x8_font_pxplustandynewtv_n");
+extern const uint8_t u8x8_font_pxplustandynewtv_u[] U8X8_FONT_SECTION("u8x8_font_pxplustandynewtv_u");
 
 /* end font list */
 
