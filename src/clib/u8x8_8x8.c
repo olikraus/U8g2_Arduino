@@ -45,14 +45,21 @@ void u8x8_SetFont(u8x8_t *u8x8, const uint8_t *font_8x8)
   u8x8->font = font_8x8;
 }
 
-void u8x8_DrawGlyph(u8x8_t *u8x8, uint8_t x, uint8_t y, uint8_t encoding)
+/*
+ Args:
+   u8x8: ptr to u8x8 structure
+   encoding: glyph for which the data is requested (must be between 0 and 255)
+   buf: pointer to 8 bytes
+*/
+static void u8x8_get_glyph_data(u8x8_t *u8x8, uint8_t encoding, uint8_t *buf) U8X8_NOINLINE;
+static void u8x8_get_glyph_data(u8x8_t *u8x8, uint8_t encoding, uint8_t *buf) 
 {
   uint8_t first, last, i;
-  uint8_t buf[8];
   uint16_t offset;
   first = u8x8_pgm_read(u8x8->font+0);
   last = u8x8_pgm_read(u8x8->font+1);
   
+  /* get the glyph bitmap from the font */
   if ( first <= encoding && encoding <= last )
   {
     offset = encoding;
@@ -72,6 +79,8 @@ void u8x8_DrawGlyph(u8x8_t *u8x8, uint8_t x, uint8_t y, uint8_t encoding)
       buf[i] = 0;
     }
   }
+  
+  /* invert the bitmap if required */
   if ( u8x8->is_font_inverse_mode )
   {
     for( i = 0; i < 8; i++ )
@@ -79,8 +88,94 @@ void u8x8_DrawGlyph(u8x8_t *u8x8, uint8_t x, uint8_t y, uint8_t encoding)
       buf[i] ^= 255;
     }
   }
+  
+}
+
+void u8x8_DrawGlyph(u8x8_t *u8x8, uint8_t x, uint8_t y, uint8_t encoding)
+{
+  uint8_t buf[8];
+  u8x8_get_glyph_data(u8x8, encoding, buf);
   u8x8_DrawTile(u8x8, x, y, 1, buf);
 }
+
+
+/*
+  Source: http://graphics.stanford.edu/~seander/bithacks.html
+	Section: Interleave bits by Binary Magic Numbers 
+   Original codes is here:
+		static const unsigned int B[] = {0x55555555, 0x33333333, 0x0F0F0F0F, 0x00FF00FF};
+		static const unsigned int S[] = {1, 2, 4, 8};
+
+		unsigned int x; // Interleave lower 16 bits of x and y, so the bits of x
+		unsigned int y; // are in the even positions and bits from y in the odd;
+		unsigned int z; // z gets the resulting 32-bit Morton Number.  
+				// x and y must initially be less than 65536.
+
+		x = (x | (x << S[3])) & B[3];
+		x = (x | (x << S[2])) & B[2];
+		x = (x | (x << S[1])) & B[1];
+		x = (x | (x << S[0])) & B[0];
+
+		y = (y | (y << S[3])) & B[3];
+		y = (y | (y << S[2])) & B[2];
+		y = (y | (y << S[1])) & B[1];
+		y = (y | (y << S[0])) & B[0];
+
+		z = x | (y << 1);
+*/
+static uint16_t u8x8_upscale_byte(uint8_t x)
+{
+	uint16_t y = x;
+	y |= (y << 4);		// x = (x | (x << S[2])) & B[2];
+	y &= 0x0f0f;
+	y |= (y << 2);		// x = (x | (x << S[1])) & B[1];
+	y &= 0x3333;
+	y |= (y << 1);		// x = (x | (x << S[0])) & B[0];
+	y &= 0x5555;
+  
+	y |= (y << 1);		// z = x | (y << 1);
+	return y;
+}
+
+static void u8x8_upscale_buf(uint8_t *src, uint8_t *dest) U8X8_NOINLINE;
+static void u8x8_upscale_buf(uint8_t *src, uint8_t *dest)
+{
+  uint8_t i = 4;  
+  do 
+  {
+    *dest++ = *src;
+    *dest++ = *src++;
+    i--;
+  } while( i > 0 );
+}
+
+void u8x8_Draw2x2Glyph(u8x8_t *u8x8, uint8_t x, uint8_t y, uint8_t encoding)
+{
+  uint8_t i;
+  uint16_t t;
+  uint8_t buf[8];
+  uint8_t buf1[8];
+  uint8_t buf2[8];
+  u8x8_get_glyph_data(u8x8, encoding, buf);
+  for( i = 0; i < 8; i ++ )
+  {
+      t = u8x8_upscale_byte(buf[i]);
+      buf1[i] = t >> 8;
+      buf2[i] = t & 255;
+  }
+  u8x8_upscale_buf(buf2, buf);
+  u8x8_DrawTile(u8x8, x, y, 1, buf);
+  
+  u8x8_upscale_buf(buf2+4, buf);
+  u8x8_DrawTile(u8x8, x+1, y, 1, buf);
+  
+  u8x8_upscale_buf(buf1, buf);
+  u8x8_DrawTile(u8x8, x, y+1, 1, buf);
+  
+  u8x8_upscale_buf(buf1+4, buf);
+  u8x8_DrawTile(u8x8, x+1, y+1, 1, buf);  
+}
+
 
 /*
 source: https://en.wikipedia.org/wiki/UTF-8
@@ -92,49 +187,8 @@ Bits	from 		to			bytes	Byte 1 		Byte 2 		Byte 3 		Byte 4 		Byte 5 		Byte 6
 26 	U+200000 	U+3FFFFFF 	5 		111110xx 	10xxxxxx 	10xxxxxx 	10xxxxxx 	10xxxxxx
 31 	U+4000000 	U+7FFFFFFF 	6 		1111110x 	10xxxxxx 	10xxxxxx 	10xxxxxx 	10xxxxxx 	10xxxxxx  
 
-This function returns 0x0ffff for end of string (0x0ffff is not a unicode glyph)
 
 */
-#ifdef OBSOLETE
-uint16_t u8x8_get_encoding_from_utf8_string(const char **str) 
-{
-  uint16_t e;
-  uint8_t b;
-  b = **str;
-  if ( b >= 0xc0 )
-  {
-    if ( b >= 0xf0 )	/* check for UTF-8 4, 5 and 6-byte sequence */
-    {
-      b &= 0x01;	/* only consider lowest bit, because only plane 0 (16 bit) is supported with u8glib v2 */
-    }
-    else if ( b >= 0xe0 )	/* check for UTF-8 3-byte sequence */
-    {
-      b &= 0x0f;
-    }
-    else /* assume UTF-8 2-byte sequence */
-    {
-      b &= 0x1f;
-    }
-    e = b;    
-    for(;;)
-    {
-      (*str)++;
-      b = **str;
-      if ( (b & 0x0c0) != 0x080 )
-	break;
-      b &= 0x3f;
-      e <<=6;
-      e |= b;
-    }      
-  }
-  else
-  {
-    e = b;		/* init with ASCII code */
-    (*str)++;
-  }
-  return e;
-}
-#endif
 
 /* reset the internal state machine */
 void u8x8_utf8_init(u8x8_t *u8x8)
@@ -209,34 +263,6 @@ uint16_t u8x8_utf8_next(u8x8_t *u8x8, uint8_t b)
 }
 
 
-#ifdef OBSOLETE
-uint16_t u8x8_get_char_from_string(const char **str)
-{
-  uint8_t b = **str;
-  (*str)++;
-  return b; 
-}
-
-static uint8_t u8x8_draw_string(u8x8_t *u8x8, uint8_t x, uint8_t y, const char *s) U8X8_NOINLINE;
-static uint8_t u8x8_draw_string(u8x8_t *u8x8, uint8_t x, uint8_t y, const char *s)
-{
-  uint16_t c;
-  uint8_t cnt = 0;
-  for(;;)
-  {
-    c = u8x8->char_cb(&s);
-    if ( c == 0 )
-      break;
-    if ( c <= 255 )
-    {
-      u8x8_DrawGlyph(u8x8, x, y, (uint8_t)c);
-      x++;
-      cnt++;
-    }
-  }
-  return cnt;
-}
-#endif
 
 static uint8_t u8x8_draw_string(u8x8_t *u8x8, uint8_t x, uint8_t y, const char *s) U8X8_NOINLINE;
 static uint8_t u8x8_draw_string(u8x8_t *u8x8, uint8_t x, uint8_t y, const char *s)
@@ -273,6 +299,45 @@ uint8_t u8x8_DrawUTF8(u8x8_t *u8x8, uint8_t x, uint8_t y, const char *s)
   return u8x8_draw_string(u8x8, x, y, s);
 }
 
+
+
+static uint8_t u8x8_draw_2x2_string(u8x8_t *u8x8, uint8_t x, uint8_t y, const char *s) U8X8_NOINLINE;
+static uint8_t u8x8_draw_2x2_string(u8x8_t *u8x8, uint8_t x, uint8_t y, const char *s)
+{
+  uint16_t e;
+  uint8_t cnt = 0;
+  u8x8_utf8_init(u8x8);
+  for(;;)
+  {
+    e = u8x8->next_cb(u8x8, (uint8_t)*s);
+    if ( e == 0x0ffff )
+      break;
+    s++;
+    if ( e != 0x0fffe )
+    {
+      u8x8_Draw2x2Glyph(u8x8, x, y, e);
+      x+=2;
+      cnt++;
+    }
+  }
+  return cnt;
+}
+
+
+uint8_t u8x8_Draw2x2String(u8x8_t *u8x8, uint8_t x, uint8_t y, const char *s)
+{
+  u8x8->next_cb = u8x8_ascii_next;
+  return u8x8_draw_2x2_string(u8x8, x, y, s);
+}
+
+uint8_t u8x8_Draw2x2UTF8(u8x8_t *u8x8, uint8_t x, uint8_t y, const char *s)
+{
+  u8x8->next_cb = u8x8_utf8_next;
+  return u8x8_draw_2x2_string(u8x8, x, y, s);
+}
+
+
+
 uint8_t u8x8_GetUTF8Len(u8x8_t *u8x8, const char *s)
 {
   uint16_t e;
@@ -289,26 +354,5 @@ uint8_t u8x8_GetUTF8Len(u8x8_t *u8x8, const char *s)
   }
   return cnt;
 }
-
-
-/*
-void u8x8_Draw8x8UTF8(u8x8_t *u8x8, uint8_t x, uint8_t y, const char *s)
-{
-  uint16_t unicode;
-  for(;;)
-  {
-    unicode = u8x8_get_encoding_from_utf8_string(&s);
-    if ( unicode == 0 )
-      break;
-    if ( unicode <= 255 )
-    {
-      u8x8_Draw8x8Glyph(u8x8, x, y, (uint8_t)unicode);
-      x++;
-    }
-  }
-}
-*/
-
-
 
 
