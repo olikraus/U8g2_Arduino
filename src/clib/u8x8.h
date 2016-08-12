@@ -510,6 +510,7 @@ uint8_t u8x8_cad_EndTransfer(u8x8_t *u8x8) U8X8_NOINLINE;
 */
 
 #define U8X8_C(c0)				(U8X8_MSG_CAD_SEND_CMD), (c0)
+#define U8X8_A(a0)				(U8X8_MSG_CAD_SEND_ARG), (a0)
 #define U8X8_CA(c0,a0)			(U8X8_MSG_CAD_SEND_CMD), (c0), (U8X8_MSG_CAD_SEND_ARG), (a0)
 #define U8X8_CAA(c0,a0,a1)		(U8X8_MSG_CAD_SEND_CMD), (c0), (U8X8_MSG_CAD_SEND_ARG), (a0), (U8X8_MSG_CAD_SEND_ARG), (a1)
 #define U8X8_AAC(a0,a1,c0)		(U8X8_MSG_CAD_SEND_ARG), (a0), (U8X8_MSG_CAD_SEND_ARG), (a1), (U8X8_MSG_CAD_SEND_CMD), (c0)
@@ -683,6 +684,7 @@ uint8_t u8x8_d_t6963_128x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *ar
 uint8_t u8x8_d_ssd1322_256x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_t6963_256x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_a2printer_384x240(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_sed1330_240x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 
 
 /*==========================================*/
