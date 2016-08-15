@@ -185,6 +185,7 @@ typedef void (*u8g2_update_dimension_cb)(u8g2_t *u8g2);
 typedef void (*u8g2_draw_l90_cb)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir);
 typedef void (*u8g2_draw_ll_hvline_cb)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir);
 
+typedef uint8_t (*u8g2_get_kerning_cb)(u8g2_t *u8g2, uint16_t e1, uint16_t e2);
 
 
 /* from ucglib... */
@@ -249,6 +250,17 @@ struct _u8g2_font_decode_t
 };
 typedef struct _u8g2_font_decode_t u8g2_font_decode_t;
 
+struct _u8g2_kerning_t
+{
+  uint16_t first_table_cnt;
+  uint16_t second_table_cnt;
+  const uint16_t *first_encoding_table;  
+  const uint16_t *index_to_second_table;
+  const uint16_t *second_encoding_table;
+  const uint8_t *kerning_values;
+};
+typedef struct _u8g2_kerning_t u8g2_kerning_t;
+
 
 struct u8g2_cb_struct
 {
@@ -296,6 +308,9 @@ struct u8g2_struct
   
   /* information about the current font */
   const uint8_t *font;             /* current font for all text procedures */
+  // removed: const u8g2_kerning_t *kerning;		/* can be NULL */
+  // removed: u8g2_get_kerning_cb get_kerning_cb;
+  
   u8g2_font_calc_vref_fnptr font_calc_vref;
   u8g2_font_decode_t font_decode;		/* new font decode structure */
   u8g2_font_info_t font_info;			/* new font info structure */
@@ -303,6 +318,9 @@ struct u8g2_struct
   uint8_t font_height_mode;
   int8_t font_ref_ascent;
   int8_t font_ref_descent;
+  
+  int8_t glyph_x_offset;		/* set by u8g2_GetGlyphWidth as a side effect */
+  
 
   uint8_t draw_color;		/* 0: clear pixel, 1: set pixel, modified and restored by font procedures */
 					/* draw_color can be used also directly by the user API */
@@ -573,6 +591,13 @@ void u8g2_DrawPolygon(u8g2_t *u8g2);
 void u8g2_DrawTriangle(u8g2_t *u8g2, int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 
 
+
+/*==========================================*/
+/* u8g2_kerning.c */
+//uint8_t u8g2_GetNullKerning(u8g2_t *u8g2, uint16_t e1, uint16_t e2);
+uint8_t u8g2_GetKerning(u8g2_t *u8g2, u8g2_kerning_t *kerning, uint16_t e1, uint16_t e2);
+
+
 /*==========================================*/
 /* u8g2_font.c */
 
@@ -592,11 +617,14 @@ u8g2_uint_t u8g2_DrawGlyph(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint16_t 
 void u8g2_SetFontDirection(u8g2_t *u8g2, uint8_t dir);
 u8g2_uint_t u8g2_DrawStr(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str);
 u8g2_uint_t u8g2_DrawUTF8(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str);
+u8g2_uint_t u8g2_DrawExtendedUTF8(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t to_left, u8g2_kerning_t *kerning, const char *str);
 
 #define u8g2_GetMaxCharHeight(u8g2) ((u8g2)->font_info.max_char_height)
 #define u8g2_GetMaxCharWidth(u8g2) ((u8g2)->font_info.max_char_width)
 #define u8g2_GetAscent(u8g2) ((u8g2)->font_ref_ascent)
 #define u8g2_GetDescent(u8g2) ((u8g2)->font_ref_descent)
+#define u8g2_GetFontAscent(u8g2) ((u8g2)->font_ref_ascent)
+#define u8g2_GetFontDescent(u8g2) ((u8g2)->font_ref_descent)
 
 u8g2_uint_t u8g2_GetStrWidth(u8g2_t *u8g2, const char *s);
 u8g2_uint_t u8g2_GetUTF8Width(u8g2_t *u8g2, const char *str);
