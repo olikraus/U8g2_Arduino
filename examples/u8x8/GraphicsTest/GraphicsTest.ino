@@ -170,6 +170,11 @@ void loop(void)
   }
   draw_bar(0, 0);
 
+  pre();
+  u8x8.drawString(0, 2, "Small");
+  u8x8.draw2x2String(0, 5, "Big");
+  delay(3000);
+  
 
 }
 
