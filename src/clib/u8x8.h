@@ -211,6 +211,9 @@ struct u8x8_display_info_struct
   /* AVR: below 70: DIV2, 8 MHz, >= 70 --> 4MHz clock (DIV4) */
   uint8_t sck_pulse_width_ns;		/* UC1701: 50ns */
   
+  /* until here we have 8 bytes (uint8_t). Newly introduced for SPI.beginTransaction */
+  uint32_t sck_clock_hz;
+  
   /* previous name "sck_takeover_edge" renamed to "spi_mode" */
   /* bit 0 of spi_mode is equal to the value of the previous variable sck_takeover_edge */ 
   /* SPI has four clock modes: */
@@ -670,6 +673,7 @@ void utf8_show(void);		/* show content of UTF-8 frame buffer */
 /*==========================================*/
 /* u8x8_d_XXX.c */
 uint8_t u8x8_d_uc1701_ea_dogs102(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_uc1701_mini12864(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_ssd1306_128x64_noname(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_sh1106_128x64_noname(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st7920_192x32(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
