@@ -144,6 +144,7 @@ extern "C" {
 #if defined(__GNUC__) && defined(__AVR__)
 #  define U8X8_FONT_SECTION(name) U8X8_SECTION(".progmem." name)
 #  define u8x8_pgm_read(adr) pgm_read_byte_near(adr)
+#  define U8X8_PROGMEM PROGMEM
 #endif
 
 #ifndef U8X8_FONT_SECTION
@@ -152,6 +153,10 @@ extern "C" {
 
 #ifndef u8x8_pgm_read
 #  define u8x8_pgm_read(adr) (*(const uint8_t *)(adr)) 
+#endif
+
+#ifndef U8X8_PROGMEM
+#  define U8X8_PROGMEM
 #endif
 
 #ifdef ARDUINO
@@ -686,10 +691,12 @@ uint8_t u8x8_d_st7565_nhd_c12832(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, voi
 uint8_t u8x8_d_ld7032_60x32(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_t6963_240x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_t6963_128x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
-uint8_t u8x8_d_ssd1322_256x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_ssd1322_nhd_256x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_t6963_256x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_a2printer_384x240(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_sed1330_240x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_ra8835_nhd_240x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_ssd1325_nhd_128x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 
 
 /*==========================================*/
