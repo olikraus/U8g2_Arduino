@@ -123,7 +123,7 @@ void u8x8_DrawGlyph(u8x8_t *u8x8, uint8_t x, uint8_t y, uint8_t encoding)
 
 		z = x | (y << 1);
 */
-static uint16_t u8x8_upscale_byte(uint8_t x)
+uint16_t u8x8_upscale_byte(uint8_t x) 
 {
 	uint16_t y = x;
 	y |= (y << 4);		// x = (x | (x << S[2])) & B[2];
@@ -196,7 +196,7 @@ void u8x8_utf8_init(u8x8_t *u8x8)
   u8x8->utf8_state = 0;	/* also reset during u8x8_SetupDefaults() */
 }
 
-uint16_t u8x8_ascii_next(u8x8_t *u8x8, uint8_t b)
+uint16_t u8x8_ascii_next(U8X8_UNUSED u8x8_t *u8x8, uint8_t b)
 {
   if ( b == 0 || b == '\n' ) /* '\n' terminates the string to support the string list procedures */
     return 0x0ffff;	/* end of string detected*/
