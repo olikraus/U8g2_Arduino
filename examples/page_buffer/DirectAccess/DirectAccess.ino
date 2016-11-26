@@ -1,6 +1,11 @@
 /*
 
-  SelectionList.ino
+  DirectAccess.ino
+  
+  Demonstrate how to interact with the internal buffer directly
+  Warning: This example will not work with all graphics controller.
+  It will work with SSD13xx, UC1xxx, ST7656 controller
+  It will definitly not work with ST7920, T6962, RA8835.
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -42,6 +47,15 @@
 #ifdef U8X8_HAVE_HW_I2C
 #include <Wire.h>
 #endif
+
+/*
+  U8glib Example Overview:
+    Frame Buffer Examples: clearBuffer/sendBuffer. Fast, but may not work with all Arduino boards because of RAM consumption
+    Page Buffer Examples: firstPage/nextPage. Less RAM usage, should work with all Arduino boards.
+    U8x8 Text Only Example: No RAM usage, direct communication with display controller. No graphics, 8x8 Text only.
+    
+  This is a page buffer example.    
+*/
 
 // Please UNCOMMENT one of the contructor lines below
 // U8g2 Contructor List (Picture Loop Page Buffer)
@@ -98,49 +112,120 @@
 
 // End of constructor list
 
+uint8_t background_images[8][32];
 
 void setup(void) {
-  
-  // DOGS102 Shield (http://shieldlist.org/controlconnection/dogs102)
-  // u8x8.begin(/* menu_select_pin= */ 5, /* menu_next_pin= */ 4, /* menu_prev_pin= */ 2, /* menu_home_pin= */ 3);
-  
-  // DOGM128 Shield (http://shieldlist.org/schmelle2/dogm128) + DOGXL160 Shield
-  // u8x8.begin(/* menu_select_pin= */ 2, /* menu_next_pin= */ 3, /* menu_prev_pin= */ 7, /* menu_home_pin= */ 8);
-  
-  // Arduboy
-  //u8g2.begin(/*Select=*/ A0, /*Right/Next=*/ 5, /*Left/Prev=*/ 9, /*Up=*/ 8, /*Down=*/ 10, /*Home/Cancel=*/ A1); // Arduboy DevKit
-  u8g2.begin(/*Select=*/ 7, /*Right/Next=*/ A1, /*Left/Prev=*/ A2, /*Up=*/ A0, /*Down=*/ A3, /*Home/Cancel=*/ 8); // Arduboy 10 (Production)
+  uint8_t i;
+  /* U8g2 Project: SSD1306 Test Board */
+  //pinMode(10, OUTPUT);
+  //pinMode(9, OUTPUT);
+  //digitalWrite(10, 0);
+  //digitalWrite(9, 0);		
 
-  u8g2.setFont(u8g2_font_6x12_tr);
+  /* U8g2 Project: T6963 Test Board */
+  //pinMode(18, OUTPUT);
+  //digitalWrite(18, 1);
+
+
+  u8g2.begin();
+  u8g2.setFlipMode(0);
+
+  u8g2.setFont(u8g2_font_chroma48medium8_8r);
+  u8g2.setFontPosBottom();
+  
+  // create eight images for a background animation
+  for( i = 0; i < 8; i++ ) {
+    // setup buffer by starting with the first page
+    u8g2.firstPage();
+    // render some graphics into the buffer
+    u8g2.drawStr(0-i,8,"U8g2U");
+    // store four tiles from the start of the buffer content in some local memory
+    // one tile has 8x8 pixel: 8 bytes, four tiles are 32 bytes.
+    // note: the actual memory pattern depends on the target display
+    memcpy(background_images[i], u8g2.getBufferPtr(), 32);    
+  }
+
+  // revert back to basline pos
+  u8g2.setFontPosBaseline();
+
 }
 
-const char *string_list = 
-  "Altocumulus\n"
-  "Altostratus\n"
-  "Cirrocumulus\n"
-  "Cirrostratus\n"
-  "Cirrus\n"
-  "Cumulonimbus\n"
-  "Cumulus\n"
-  "Nimbostratus\n"
-  "Stratocumulus\n"
-  "Stratus";
+void drawBackground(uint8_t image_idx)
+{
+  u8g2_uint_t src_idx, dest_idx, total;
+  uint8_t *buf;
+  
+  total = u8g2.getBufferTileWidth();
+  total *= 8;	// calculate width in pixel
+  
+  // get the pointer to the buffer. We will write the image to that buffer
+  buf = u8g2.getBufferPtr();
+  
+  // fill the buffer with the background image
+  // repeat the image until the complete width is filled
+  src_idx = 0;
+  for( dest_idx = 0; dest_idx < total; dest_idx++ )
+  {
+    buf[dest_idx] = background_images[image_idx][src_idx];
+    src_idx++;
+    if ( src_idx >= 32 )
+      src_idx = 0;
+  }
+}
 
-uint8_t current_selection = 0;
+void drawLogo(void)
+{
+    u8g2.setFontMode(1);	// Transparent
 
+    u8g2.setFontDirection(0);
+    u8g2.setFont(u8g2_font_inb24_mf);
+    u8g2.drawStr(0, 30, "U");
+    
+    u8g2.setFontDirection(1);
+    u8g2.setFont(u8g2_font_inb30_mn);
+    u8g2.drawStr(21,8,"8");
+        
+    u8g2.setFontDirection(0);
+    u8g2.setFont(u8g2_font_inb24_mf);
+    u8g2.drawStr(51,30,"g");
+    u8g2.drawStr(67,30,"\xb2");
+    
+    u8g2.drawHLine(2, 35, 47);
+    u8g2.drawHLine(3, 36, 47);
+    u8g2.drawVLine(45, 32, 12);
+    u8g2.drawVLine(46, 33, 12);
+    
+}
+
+uint8_t image_idx = 0;
+uint8_t dir = 0;
 
 void loop(void) {
 
-  current_selection = u8g2.userInterfaceSelectionList(
-    "Cloud Types",
-    current_selection, 
-    string_list);
+  // buffer clear is not required any more 
+  // this increase performance a little bit
+  u8g2.setAutoPageClear(0);	
 
-  u8g2.userInterfaceMessage(
-      "Selection:", 
-      u8x8_GetStringLineStart(current_selection, string_list ),
-      "",
-      " ok \n cancel ");
+  // draw the U8g2 logo with a custom background
+  u8g2.firstPage();
+  do {
+    drawBackground(image_idx);
+    drawLogo();
+  } while ( u8g2.nextPage() );
+  
+  // move the background around
+  if ( dir == 0 ){
+    image_idx++;
+    if ( image_idx == 7 ) {
+      dir = 1;
+    }
+  } else {
+    image_idx--;
+    if ( image_idx == 0 ) {
+      dir = 0;
+    }
+  }    
+  
+  delay(10);
 }
-
 

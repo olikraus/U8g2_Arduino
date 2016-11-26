@@ -84,11 +84,17 @@ void u8g2_SendBuffer(u8g2_t *u8g2)
 }
 
 /*============================================*/
+void u8g2_SetBufferCurrTileRow(u8g2_t *u8g2, uint8_t row)
+{
+  u8g2->tile_curr_row = row;
+  u8g2->cb->update(u8g2);
+}
+
 void u8g2_FirstPage(u8g2_t *u8g2)
 {
-  u8g2_ClearBuffer(u8g2);
-  u8g2->tile_curr_row = 0;
-  u8g2->cb->update(u8g2);
+  if ( u8g2->is_auto_page_clear )
+    u8g2_ClearBuffer(u8g2);
+  u8g2_SetBufferCurrTileRow(u8g2, 0);
 }
 
 uint8_t u8g2_NextPage(u8g2_t *u8g2)
@@ -99,8 +105,8 @@ uint8_t u8g2_NextPage(u8g2_t *u8g2)
   row += u8g2->tile_buf_height;
   if ( row >= u8g2_GetU8x8(u8g2)->display_info->tile_height )
     return 0;
-  u8g2_ClearBuffer(u8g2);
-  u8g2->tile_curr_row = row;
-  u8g2->cb->update(u8g2); 
+  if ( u8g2->is_auto_page_clear )
+    u8g2_ClearBuffer(u8g2);
+  u8g2_SetBufferCurrTileRow(u8g2, row);
   return 1;
 }

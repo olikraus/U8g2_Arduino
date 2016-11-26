@@ -192,54 +192,89 @@ extern "C" uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uin
   uint8_t i, b;
   uint8_t *data;
   uint8_t takeover_edge = u8x8_GetSPIClockPhase(u8x8);
-  uint8_t not_takeover_edge = 1 - takeover_edge;
+  //uint8_t not_takeover_edge = 1 - takeover_edge;
 
   /* the following static vars are recalculated in U8X8_MSG_BYTE_START_TRANSFER */
   /* so, it should be possible to used multiple displays with different pins */
   
   static volatile uint8_t *arduino_clock_port;
-  static volatile uint8_t arduino_clock_mask;
-  static volatile uint8_t arduino_clock_n_mask;
+  
+  static uint8_t arduino_clock_mask;
+  static uint8_t arduino_clock_n_mask;
   
   static volatile uint8_t *arduino_data_port;
-  static volatile uint8_t arduino_data_mask;
-  static volatile uint8_t arduino_data_n_mask;
+  static uint8_t arduino_data_mask;
+  static uint8_t arduino_data_n_mask;
+
 
 
   switch(msg)
   {
     case U8X8_MSG_BYTE_SEND:
       data = (uint8_t *)arg_ptr;
+      
       while( arg_int > 0 )
       {
 	b = *data;
 	data++;
 	arg_int--;
-	for( i = 0; i < 8; i++ )
+	
+	if ( b == 0 )
 	{
-	  if ( b & 128 )
-	    *arduino_data_port |= arduino_data_mask;
+	  /* do some high speed transfer for zero data */
+	  *arduino_data_port &= arduino_data_n_mask;
+	  if ( takeover_edge == 0 )
+	  {
+	    for( i = 0; i < 4; i++ )
+	    {
+	      *arduino_clock_port |= arduino_clock_mask;
+	      *arduino_clock_port &= arduino_clock_n_mask;
+	      *arduino_clock_port |= arduino_clock_mask;
+	      *arduino_clock_port &= arduino_clock_n_mask;
+	    }
+	  }
 	  else
-	    *arduino_data_port &= arduino_data_n_mask;
-	  b <<= 1;
+	  {
+	    for( i = 0; i < 4; i++ )
+	    {
+	      *arduino_clock_port &= arduino_clock_n_mask;
+	      *arduino_clock_port |= arduino_clock_mask;
+	      *arduino_clock_port &= arduino_clock_n_mask;
+	      *arduino_clock_port |= arduino_clock_mask;
+	    }
+	  }
+	}
+	else
+	{
+	  for( i = 0; i < 8; i++ )
+	  {
+	    if ( b & 128 )
+	      *arduino_data_port |= arduino_data_mask;
+	    else
+	      *arduino_data_port &= arduino_data_n_mask;
+	    b <<= 1;
 
-	  if ( not_takeover_edge != 0 )
-	    *arduino_clock_port |= arduino_clock_mask;
-	  else
-	    *arduino_clock_port &= arduino_clock_n_mask;
-		
-	  /* AVR Architecture is very slow, extra call is not required */
-	  //u8x8_gpio_Delay(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->sda_setup_time_ns);
-	  
-	  if ( takeover_edge != 0 )
-	    *arduino_clock_port |= arduino_clock_mask;
-	  else
-	    *arduino_clock_port &= arduino_clock_n_mask;
-	  
-	  /* AVR Architecture is very slow, extra call is not required */
-	  //u8x8_gpio_Delay(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->sck_pulse_width_ns);
-	}    
+	    if ( takeover_edge == 0 )
+	      *arduino_clock_port |= arduino_clock_mask;
+	    else
+	      *arduino_clock_port &= arduino_clock_n_mask;
+		  
+	    /* AVR Architecture is very slow, extra call is not required */
+	    //u8x8_gpio_Delay(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->sda_setup_time_ns);
+	    
+	    if ( takeover_edge != 0 )
+	      *arduino_clock_port |= arduino_clock_mask;
+	    else
+	      *arduino_clock_port &= arduino_clock_n_mask;
+	    
+	    /* AVR Architecture is very slow, extra call is not required */
+	    //u8x8_gpio_Delay(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->sck_pulse_width_ns);
+	  }    
+	}
       }
+      
+      
+      
       break;
       
     case U8X8_MSG_BYTE_INIT:
@@ -262,6 +297,8 @@ extern "C" uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uin
       arduino_clock_port = portOutputRegister(digitalPinToPort(u8x8->pins[U8X8_PIN_SPI_CLOCK]));
       arduino_clock_mask = digitalPinToBitMask(u8x8->pins[U8X8_PIN_SPI_CLOCK]);
       arduino_clock_n_mask = ~arduino_clock_mask;
+    
+      
 
       /* there is no consistency checking for u8x8->pins[U8X8_PIN_SPI_DATA] */
 
@@ -449,6 +486,140 @@ extern "C" uint8_t u8x8_byte_arduino_2nd_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_U
 #endif
   return 1;
 }
+
+/*=============================================*/
+
+/*
+  replacement for a more faster u8x8_byte_8bit_8080mode
+  in general u8x8_byte_8bit_8080mode could be a fallback:
+
+  uint8_t u8x8_byte_arduino_8bit_8080mode(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+  {
+    return u8x8_byte_8bit_8080mode(u8x8, msg,arg_int, arg_ptr);
+  }
+
+
+
+*/
+
+#ifndef __AVR_ARCH__
+#define __AVR_ARCH__ 0
+#endif 
+
+#if !defined(U8X8_USE_PINS)
+  /* no pin information (very strange), so fallback */
+extern "C" uint8_t u8x8_byte_arduino_8bit_8080mode(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+{
+  return u8x8_byte_8bit_8080mode(u8x8, msg,arg_int, arg_ptr);
+}
+
+#elif __AVR_ARCH__ == 4 || __AVR_ARCH__ == 5 || __AVR_ARCH__ == 51 || __AVR_ARCH__ == 6
+
+/* this function completly replaces u8x8_byte_8bit_8080mode*/
+extern "C" uint8_t u8x8_byte_arduino_8bit_8080mode(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+{
+  uint8_t i, b;
+  uint8_t *data;
+
+  /* the following static vars are recalculated in U8X8_MSG_BYTE_START_TRANSFER */
+  /* so, it should be possible to used multiple displays with different pins */
+  
+  static volatile uint8_t *arduino_e_port;
+  static volatile uint8_t arduino_e_mask;
+  static volatile uint8_t arduino_e_n_mask;
+  
+  static volatile uint8_t *arduino_data_port[8];
+  static volatile uint8_t arduino_data_mask[8];
+  static volatile uint8_t arduino_data_n_mask[8];
+
+  switch(msg)
+  {
+    case U8X8_MSG_BYTE_SEND:
+      data = (uint8_t *)arg_ptr;
+      while( arg_int > 0 )
+      {
+	b = *data;
+	data++;
+	arg_int--;
+	for( i = 0; i < 8; i++ )
+	{
+	  if ( b & 1 )
+	    *arduino_data_port[i] |= arduino_data_mask[i];
+	  else
+	    *arduino_data_port[i] &= arduino_data_n_mask[i];
+	  b >>= 1;
+
+	}
+	
+	*arduino_e_port &= arduino_e_n_mask;
+
+	      
+	/* AVR Architecture is very slow, extra call is not required */
+	u8x8_gpio_Delay(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->sda_setup_time_ns);
+	
+	*arduino_e_port |= arduino_e_mask;
+	
+	/* AVR Architecture is very slow, extra call is not required */
+	u8x8_gpio_Delay(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->sck_pulse_width_ns);
+	
+      }
+      break;
+      
+    case U8X8_MSG_BYTE_INIT:
+      /* disable chipselect */
+      u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_disable_level);
+      /* no wait required here */
+      
+      /* ensure that the enable signal is high */
+      u8x8_gpio_call(u8x8, U8X8_MSG_GPIO_E, 1);
+      break;
+    case U8X8_MSG_BYTE_SET_DC:
+      u8x8_gpio_SetDC(u8x8, arg_int);
+      break;
+    case U8X8_MSG_BYTE_START_TRANSFER:
+      u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_enable_level);  
+      u8x8->gpio_and_delay_cb(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->post_chip_enable_wait_ns, NULL);
+
+      /* there is no consistency checking for u8x8->pins[U8X8_PIN_E] */
+    
+      arduino_e_port = portOutputRegister(digitalPinToPort(u8x8->pins[U8X8_PIN_E]));
+      arduino_e_mask = digitalPinToBitMask(u8x8->pins[U8X8_PIN_E]);
+      arduino_e_n_mask = ~arduino_e_mask;
+
+      /* there is no consistency checking for u8x8->pins[U8X8_PIN_D0] */
+
+      for( i = 0; i < 8; i++ )
+      {
+	arduino_data_port[i] = portOutputRegister(digitalPinToPort(u8x8->pins[U8X8_PIN_D0+i]));
+	arduino_data_mask[i] = digitalPinToBitMask(u8x8->pins[U8X8_PIN_D0+i]);
+	arduino_data_n_mask[i] = ~arduino_data_mask[i];
+      }
+
+      break;
+    case U8X8_MSG_BYTE_END_TRANSFER:
+      u8x8->gpio_and_delay_cb(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->pre_chip_disable_wait_ns, NULL);
+      u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_disable_level);
+      break;
+    default:
+      return 0;
+  }
+  return 1;
+}
+
+#else
+  /* fallback */
+extern "C" uint8_t u8x8_byte_arduino_8bit_8080mode(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+{
+  return u8x8_byte_8bit_8080mode(u8x8, msg,arg_int, arg_ptr);
+}
+  
+#endif
+
+
+
+
+
+
 
 
 /*

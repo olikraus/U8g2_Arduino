@@ -325,6 +325,7 @@ struct u8g2_struct
   uint8_t draw_color;		/* 0: clear pixel, 1: set pixel, modified and restored by font procedures */
 					/* draw_color can be used also directly by the user API */
 					
+  uint8_t is_auto_page_clear; 		/* set to 0 to disable automatic page clear in firstPage() and nextPage() */
   
 #ifdef U8G2_WITH_HVLINE_COUNT
   unsigned long hv_cnt;
@@ -332,6 +333,8 @@ struct u8g2_struct
 };
 
 #define u8g2_GetU8x8(u8g2) ((u8x8_t *)(u8g2))
+
+#define u8g2_SetAutoPageClear(u8g2, mode) ((u8g2)->is_auto_page_clear = (mode))
 
 /*==========================================*/
 /* u8x8 wrapper */
@@ -583,9 +586,15 @@ void u8g2_Setup_a2printer_384x240_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x
 void u8g2_SendBuffer(u8g2_t *u8g2);
 void u8g2_ClearBuffer(u8g2_t *u8g2);
 
+void u8g2_SetBufferCurrTileRow(u8g2_t *u8g2, uint8_t row) U8G2_NOINLINE;
 void u8g2_FirstPage(u8g2_t *u8g2);
 uint8_t u8g2_NextPage(u8g2_t *u8g2);
 
+#define u8g2_GetBufferPtr(u8g2) ((u8g2)->tile_buf_ptr)
+#define u8g2_GetBufferTileHeight(u8g2)	((u8g2)->tile_buf_height)
+#define u8g2_GetBufferTileWidth(u8g2)	(u8g2_GetU8x8(u8g2)->display_info->tile_width)
+/* the following variable is only valid after calling u8g2_FirstPage */
+#define u8g2_GetBufferCurrTileRow(u8g2) ((u8g2)->tile_curr_row)
 
 /*==========================================*/
 /* u8g2_ll_hvline.c */
