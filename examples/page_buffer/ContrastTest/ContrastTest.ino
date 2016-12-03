@@ -1,6 +1,6 @@
 /*
 
-  GraphicsTest.ino
+  HelloWorld.ino
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -59,7 +59,7 @@
 // Please update the pin numbers according to your setup. Use U8X8_PIN_NONE if the reset pin is not connected
 //U8G2_SSD1306_128X64_NONAME_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_SSD1306_128X64_NONAME_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 12, /* dc=*/ 4, /* reset=*/ 6);	// Arduboy (Production, Kickstarter Edition)
-//U8G2_SSD1306_128X64_NONAME_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+U8G2_SSD1306_128X64_NONAME_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_SSD1306_128X64_NONAME_1_3W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* reset=*/ 8);
 //U8G2_SSD1306_128X64_NONAME_1_SW_I2C u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* reset=*/ 8);
 //U8G2_SSD1306_128X64_NONAME_1_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);   // All Boards without Reset of the Display
@@ -109,159 +109,65 @@
 // End of constructor list
 
 
-void u8g2_prepare(void) {
-  u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.setFontRefHeightExtendedText();
-  u8g2.setDrawColor(1);
-  u8g2.setFontPosTop();
-  u8g2.setFontDirection(0);
-}
-
-void u8g2_box_frame(uint8_t a) {
-  u8g2.drawStr( 0, 0, "drawBox");
-  u8g2.drawBox(5,10,20,10);
-  u8g2.drawBox(10+a,15,30,7);
-  u8g2.drawStr( 0, 30, "drawFrame");
-  u8g2.drawFrame(5,10+30,20,10);
-  u8g2.drawFrame(10+a,15+30,30,7);
-}
-
-void u8g2_disc_circle(uint8_t a) {
-  u8g2.drawStr( 0, 0, "drawDisc");
-  u8g2.drawDisc(10,18,9);
-  u8g2.drawDisc(24+a,16,7);
-  u8g2.drawStr( 0, 30, "drawCircle");
-  u8g2.drawCircle(10,18+30,9);
-  u8g2.drawCircle(24+a,16+30,7);
-}
-
-void u8g2_r_frame(uint8_t a) {
-  u8g2.drawStr( 0, 0, "drawRFrame/Box");
-  u8g2.drawRFrame(5, 10,40,30, a+1);
-  u8g2.drawRBox(50, 10,25,40, a+1);
-}
-
-void u8g2_string(uint8_t a) {
-  u8g2.setFontDirection(0);
-  u8g2.drawStr(30+a,31, " 0");
-  u8g2.setFontDirection(1);
-  u8g2.drawStr(30,31+a, " 90");
-  u8g2.setFontDirection(2);
-  u8g2.drawStr(30-a,31, " 180");
-  u8g2.setFontDirection(3);
-  u8g2.drawStr(30,31-a, " 270");
-}
-
-void u8g2_line(uint8_t a) {
-  u8g2.drawStr( 0, 0, "drawLine");
-  u8g2.drawLine(7+a, 10, 40, 55);
-  u8g2.drawLine(7+a*2, 10, 60, 55);
-  u8g2.drawLine(7+a*3, 10, 80, 55);
-  u8g2.drawLine(7+a*4, 10, 100, 55);
-}
-
-void u8g2_triangle(uint8_t a) {
-  uint16_t offset = a;
-  u8g2.drawStr( 0, 0, "drawTriangle");
-  u8g2.drawTriangle(14,7, 45,30, 10,40);
-  u8g2.drawTriangle(14+offset,7-offset, 45+offset,30-offset, 57+offset,10-offset);
-  u8g2.drawTriangle(57+offset*2,10, 45+offset*2,30, 86+offset*2,53);
-  u8g2.drawTriangle(10+offset,40+offset, 45+offset,30+offset, 86+offset,53+offset);
-}
-
-void u8g2_ascii_1() {
-  char s[2] = " ";
-  uint8_t x, y;
-  u8g2.drawStr( 0, 0, "ASCII page 1");
-  for( y = 0; y < 6; y++ ) {
-    for( x = 0; x < 16; x++ ) {
-      s[0] = y*16 + x + 32;
-      u8g2.drawStr(x*7, y*10+10, s);
-    }
-  }
-}
-
-void u8g2_ascii_2() {
-  char s[2] = " ";
-  uint8_t x, y;
-  u8g2.drawStr( 0, 0, "ASCII page 2");
-  for( y = 0; y < 6; y++ ) {
-    for( x = 0; x < 16; x++ ) {
-      s[0] = y*16 + x + 160;
-      u8g2.drawStr(x*7, y*10+10, s);
-    }
-  }
-}
-
-void u8g2_extra_page(uint8_t a)
+void testContrast(uint8_t contrast)
 {
-  u8g2.drawStr( 0, 0, "Unicode");
-  u8g2.setFont(u8g2_font_unifont_t_symbols);
-  u8g2.setFontPosTop();
-  u8g2.drawUTF8(0, 24, "☀ ☁");
-  switch(a) {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-      u8g2.drawUTF8(a*3, 36, "☂");
-      break;
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-      u8g2.drawUTF8(a*3, 36, "☔");
-      break;
-  }
-}
-
-
-uint8_t draw_state = 0;
-
-void draw(void) {
-  u8g2_prepare();
-  switch(draw_state >> 3) {
-    case 0: u8g2_box_frame(draw_state&7); break;
-    case 1: u8g2_disc_circle(draw_state&7); break;
-    case 2: u8g2_r_frame(draw_state&7); break;
-    case 3: u8g2_string(draw_state&7); break;
-    case 4: u8g2_line(draw_state&7); break;
-    case 5: u8g2_triangle(draw_state&7); break;
-    case 6: u8g2_ascii_1(); break;
-    case 7: u8g2_ascii_2(); break;
-    case 8: u8g2_extra_page(draw_state&7); break;
-  }
+  static char cstr[6];
+  static char vstr[4];
+  u8g2.setContrast(contrast);
+  strcpy( cstr, u8x8_u8toa(contrast, 3));
+  u8g2.firstPage();
+  do {
+    //u8g2.setFont(u8g2_font_ncenB14_tr);
+    u8g2.setFont(u8g2_font_courB24_tn);
+    u8g2.drawStr(0,28, cstr);
+    u8g2.drawBox(64, 0, 10, 64);
+    u8g2.drawBox(76, 0, 2, 64);
+    u8g2.drawBox(80, 0, 1, 64);
+    u8g2.drawBox(82, 0, 1, 64);
+    
+    u8g2.drawBox(0, 32, 128, 10);
+    u8g2.drawBox(0, 44, 128, 2);
+    u8g2.drawBox(0, 48, 128, 1);
+    u8g2.drawBox(0, 50, 128, 1);
+    
+  } while ( u8g2.nextPage() );
 }
 
 
 void setup(void) {
-  u8g2.begin();
 
   /* U8g2 Project: SSD1306 Test Board */
-  pinMode(10, OUTPUT);
-  pinMode(9, OUTPUT);
-  digitalWrite(10, 0);
-  digitalWrite(9, 0);		
+  //pinMode(10, OUTPUT);
+  //pinMode(9, OUTPUT);
+  //digitalWrite(10, 0);
+  //digitalWrite(9, 0);		
 
   /* U8g2 Project: T6963 Test Board */
   //pinMode(18, OUTPUT);
   //digitalWrite(18, 1);	
-
+  
+  u8g2.begin();  
 }
+
+
 
 void loop(void) {
-  // picture loop  
-  u8g2.firstPage();  
-  do {
-    draw();
-  } while( u8g2.nextPage() );
-  
-  // increase the state
-  draw_state++;
-  if ( draw_state >= 9*8 )
-    draw_state = 0;
-
-  // delay between each page
+  uint8_t i;
+  i = 255;
+  do
+  {
+    testContrast(255-i);
+    delay(15);
+    i-=5;
+  } while( i != 0 );
+  i = 255;
   delay(100);
-
+  do
+  {
+    testContrast(i);
+    delay(15);
+    i-=5;
+  } while( i != 0 );
+  delay(100);
 }
+
