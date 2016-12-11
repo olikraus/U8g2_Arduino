@@ -1,6 +1,6 @@
 /*
 
-  HelloWorld.ino
+  ScrollingText.ino
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -50,7 +50,8 @@
     Page Buffer Examples: firstPage/nextPage. Less RAM usage, should work with all Arduino boards.
     U8x8 Text Only Example: No RAM usage, direct communication with display controller. No graphics, 8x8 Text only.
     
-  This is a page buffer example.    
+  This is a page buffer example.
+  
 */
 
 // Please UNCOMMENT one of the contructor lines below
@@ -111,6 +112,17 @@
 
 // End of constructor list
 
+
+// This example shows a scrolling text.
+// If U8G2_16BIT is not set (default), then the pixel width of the text must be lesser than 128
+// If U8G2_16BIT is set, then the pixel width an be up to 32000 
+
+
+u8g2_uint_t offset;			// current offset for the scrolling text
+u8g2_uint_t width;			// pixel width of the scrolling text (must be lesser than 128 unless U8G2_16BIT is defined
+const char *text = "U8g2 ";	// scroll this text from right to left
+
+
 void setup(void) {
 
   /* U8g2 Project: SSD1306 Test Board */
@@ -128,14 +140,38 @@ void setup(void) {
   //digitalWrite(16, 0);	
 
   u8g2.begin();  
+  
+  u8g2.setFont(u8g2_font_inb30_mr);	// set the target font to calculate the pixel width
+  width = u8g2.getUTF8Width(text);		// calculate the pixel width of the text
+  
+  u8g2.setFontMode(0);		// enable transparent mode, which is faster
 }
 
+
 void loop(void) {
+  u8g2_uint_t x;
+  
   u8g2.firstPage();
   do {
-    u8g2.setFont(u8g2_font_ncenB14_tr);
-    u8g2.drawStr(0,24,"Hello World!");
+  
+    // draw the scrolling text at current offset
+    x = offset;
+    u8g2.setFont(u8g2_font_inb30_mr);		// set the target font
+    do {								// repeated drawing of the scrolling text...
+      u8g2.drawUTF8(x, 30, text);			// draw the scolling text
+      x += width;						// add the pixel width of the scrolling text
+    } while( x < u8g2.getDisplayWidth() );		// draw again until the complete display is filled
+    
+    u8g2.setFont(u8g2_font_inb16_mr);		// draw the current pixel width
+    u8g2.setCursor(0, 58);
+    u8g2.print(width);					// this value must be lesser than 128 unless U8G2_16BIT is set
+    
   } while ( u8g2.nextPage() );
-  //delay(1000);
+  
+  offset-=1;							// scroll by one pixel
+  if ( (u8g2_uint_t)offset < (u8g2_uint_t)-width )	
+    offset = 0;							// start over again
+    
+  delay(10);							// do some small delay
 }
 

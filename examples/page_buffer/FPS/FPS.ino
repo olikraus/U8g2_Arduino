@@ -175,6 +175,12 @@
   
   7 Dec 2016
   U8G2_KS0108_128X64_1 					Uno			Clip=6.7 Box=8.2  @=2.9 Pix=4.3
+  
+  11 Dec 2016
+  U8G2_SSD1306_128X64_NONAME_1_4W_HW_SPI	Uno			Clip=25.8 Box=84.2  @=4.2 Pix=7.8		Old: no pixel optimization
+  U8G2_SSD1306_128X64_NONAME_1_4W_HW_SPI	Uno			Clip=26.3 Box=83.3  @=4.4 Pix=9.1		Pixel (len=1) optimization
+  
+  
 */
 
 
