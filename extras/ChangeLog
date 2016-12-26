@@ -74,3 +74,5 @@ https://github.com/olikraus/u8g2 ChangeLog
 2016-12-23	v2.9.2	 olikraus@gmail.com
   * Reverted the setup for SSD1306_NONAME to the original setup (undo issue 98)
   * Introduced SSD1306_VCOMH0 for the max range setup (issue 116)
+2016-12-xx	v2.10.x	 olikraus@gmail.com
+  * ST7565 LM6059 Display
