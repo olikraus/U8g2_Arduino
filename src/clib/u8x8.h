@@ -188,7 +188,7 @@ typedef uint16_t (*u8x8_char_cb)(u8x8_t *u8x8, uint8_t b);
 
 struct u8x8_tile_struct
 {
-  uint8_t *tile_ptr;	/* pointer to one or more tiles */
+  uint8_t *tile_ptr;	/* pointer to one or more tiles... should be "const" */
   uint8_t cnt;		/* number of tiles */
   uint8_t x_pos;	/* tile x position */
   uint8_t y_pos;	/* tile x position */
@@ -436,9 +436,22 @@ void u8x8_d_helper_display_init(u8x8_t *u8g2);
 */
 #define U8X8_MSG_DISPLAY_DRAW_TILE 15
 
-/*  arg_ptr: layout struct */
-//#define U8X8_MSG_DISPLAY_GET_LAYOUT 16
 
+/*
+  Name: 	U8X8_MSG_DISPLAY_REFRESH
+  Args:	
+    arg_int: -
+    arg_ptr: -
+  
+  This was introduced for the SSD1606 eInk display.
+  The problem is, that all RAM access will not appear on the screen
+  unless a special command is executed. With this message, this command
+  sequence is executed.
+  Use
+    void u8x8_RefreshDisplay(u8x8_t *u8x8)
+  to send the message to the display handler.
+*/
+#define U8X8_MSG_DISPLAY_REFRESH 16
 
 /*==========================================*/
 /* u8x8_setup.c */
@@ -476,7 +489,10 @@ void u8x8_InitDisplay(u8x8_t *u8x8);
 void u8x8_SetPowerSave(u8x8_t *u8x8, uint8_t is_enable);
 void u8x8_SetFlipMode(u8x8_t *u8x8, uint8_t mode);
 void u8x8_SetContrast(u8x8_t *u8x8, uint8_t value);
+void u8x8_ClearDisplayWithTile(u8x8_t *u8x8, const uint8_t *buf)  U8X8_NOINLINE;
 void u8x8_ClearDisplay(u8x8_t *u8x8);	// this does not work for u8g2 in some cases
+void u8x8_FillDisplay(u8x8_t *u8x8);
+void u8x8_RefreshDisplay(u8x8_t *u8x8);	// make RAM content visible on the display (Dec 16: SSD1606 only)
 
 
 
@@ -531,6 +547,9 @@ uint8_t u8x8_cad_EndTransfer(u8x8_t *u8x8) U8X8_NOINLINE;
 #define U8X8_CAA(c0,a0,a1)		(U8X8_MSG_CAD_SEND_CMD), (c0), (U8X8_MSG_CAD_SEND_ARG), (a0), (U8X8_MSG_CAD_SEND_ARG), (a1)
 #define U8X8_AAC(a0,a1,c0)		(U8X8_MSG_CAD_SEND_ARG), (a0), (U8X8_MSG_CAD_SEND_ARG), (a1), (U8X8_MSG_CAD_SEND_CMD), (c0)
 #define U8X8_D1(d0)			(U8X8_MSG_CAD_SEND_DATA), (d0)
+
+#define U8X8_A4(a0,a1,a2,a3)		U8X8_A(a0), U8X8_A(a1), U8X8_A(a2), U8X8_A(a3)
+#define U8X8_A8(a0,a1,a2,a3,a4,a5,a6,a7)	U8X8_A4((a0), (a1), (a2), (a3)), U8X8_A4((a4), (a5), (a6), (a7))
 
 
 #define U8X8_START_TRANSFER()	(U8X8_MSG_CAD_START_TRANSFER)
@@ -727,6 +746,7 @@ uint8_t u8x8_d_uc1611_ea_dogxl240(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, vo
 uint8_t u8x8_d_ks0108_128x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_ks0108_erm19264(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_pcd8544_84x48(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_ssd1606_172x72(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 
 
 
