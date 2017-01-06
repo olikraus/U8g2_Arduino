@@ -75,6 +75,24 @@ uint8_t *u8g2_m_ssd1325_16_f(uint8_t *page_cnt)
   *page_cnt = 8;
   return buf;
 }
+uint8_t *u8g2_m_ssd1327_12_1(uint8_t *page_cnt)
+{
+  static uint8_t buf[96];
+  *page_cnt = 1;
+  return buf;
+}
+uint8_t *u8g2_m_ssd1327_12_2(uint8_t *page_cnt)
+{
+  static uint8_t buf[192];
+  *page_cnt = 2;
+  return buf;
+}
+uint8_t *u8g2_m_ssd1327_12_f(uint8_t *page_cnt)
+{
+  static uint8_t buf[1152];
+  *page_cnt = 12;
+  return buf;
+}
 uint8_t *u8g2_m_ld7032_8_1(uint8_t *page_cnt)
 {
   static uint8_t buf[64];
@@ -324,6 +342,24 @@ uint8_t *u8g2_m_st7567_17_2(uint8_t *page_cnt)
 uint8_t *u8g2_m_st7567_17_f(uint8_t *page_cnt)
 {
   static uint8_t buf[1088];
+  *page_cnt = 8;
+  return buf;
+}
+uint8_t *u8g2_m_nt7534_16_1(uint8_t *page_cnt)
+{
+  static uint8_t buf[128];
+  *page_cnt = 1;
+  return buf;
+}
+uint8_t *u8g2_m_nt7534_16_2(uint8_t *page_cnt)
+{
+  static uint8_t buf[256];
+  *page_cnt = 2;
+  return buf;
+}
+uint8_t *u8g2_m_nt7534_16_f(uint8_t *page_cnt)
+{
+  static uint8_t buf[1024];
   *page_cnt = 8;
   return buf;
 }
