@@ -76,7 +76,9 @@
 //U8G2_SSD1325_NHD_128X64_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_SSD1325_NHD_128X64_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_SSD1327_SEEED_96X96_1_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);	// Seeedstudio Grove OLED 96x96
-U8G2_SSD1327_SEEED_96X96_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);	// Seeedstudio Grove OLED 96x96
+//U8G2_SSD1327_SEEED_96X96_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);	// Seeedstudio Grove OLED 96x96
+//U8G2_SSD1305_128X32_NONAME_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_SSD1305_128X32_NONAME_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_LD7032_60X32_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 11, /* data=*/ 12, /* cs=*/ 9, /* dc=*/ 10, /* reset=*/ 8);	// SW SPI Nano Board
 //U8G2_LD7032_60X32_1_4W_SW_I2C u8g2(U8G2_R0, /* clock=*/ 11, /* data=*/ 12, /* reset=*/ U8X8_PIN_NONE);	// NOT TESTED!
 //U8G2_UC1701_EA_DOGS102_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
@@ -95,6 +97,8 @@ U8G2_SSD1327_SEEED_96X96_1_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);	// S
 //U8G2_ST7920_128X64_1_HW_SPI u8g2(U8G2_R0, /* CS=*/ 10, /* reset=*/ 8);
 //U8G2_ST7565_EA_DOGM128_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_ST7565_EA_DOGM128_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_EA_DOGM132_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ U8X8_PIN_NONE);	// DOGM132 Shield
+//U8G2_ST7565_EA_DOGM132_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ U8X8_PIN_NONE);	// DOGM132 Shield
 //U8G2_ST7565_ZOLEN_128X64_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_ST7565_ZOLEN_128X64_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_ST7565_LM6059_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);		// Adafruit ST7565 GLCD
@@ -161,6 +165,11 @@ void setup(void) {
 
 void drawLogo(void)
 {
+  uint8_t mdy = 0;
+  if ( u8g2.getDisplayHeight() < 59 )
+    mdy = 5;
+  
+
     u8g2.setFontMode(1);	// Transparent
 #ifdef MINI_LOGO
 
@@ -185,21 +194,21 @@ void drawLogo(void)
 
     u8g2.setFontDirection(0);
     u8g2.setFont(u8g2_font_inb24_mf);
-    u8g2.drawStr(0, 30, "U");
+    u8g2.drawStr(0, 30-mdy, "U");
     
     u8g2.setFontDirection(1);
     u8g2.setFont(u8g2_font_inb30_mn);
-    u8g2.drawStr(21,8,"8");
+    u8g2.drawStr(21,8-mdy,"8");
         
     u8g2.setFontDirection(0);
     u8g2.setFont(u8g2_font_inb24_mf);
-    u8g2.drawStr(51,30,"g");
-    u8g2.drawStr(67,30,"\xb2");
+    u8g2.drawStr(51,30-mdy,"g");
+    u8g2.drawStr(67,30-mdy,"\xb2");
     
-    u8g2.drawHLine(2, 35, 47);
-    u8g2.drawHLine(3, 36, 47);
-    u8g2.drawVLine(45, 32, 12);
-    u8g2.drawVLine(46, 33, 12);
+    u8g2.drawHLine(2, 35-mdy, 47);
+    u8g2.drawHLine(3, 36-mdy, 47);
+    u8g2.drawVLine(45, 32-mdy, 12);
+    u8g2.drawVLine(46, 33-mdy, 12);
     
 #endif
 }
@@ -210,8 +219,8 @@ void drawURL(void)
   u8g2.setFont(u8g2_font_4x6_tr);
   if ( u8g2.getDisplayHeight() < 59 )
   {
-    u8g2.drawStr(89,20,"github.com");
-    u8g2.drawStr(73,29,"/olikraus/u8g2");
+    u8g2.drawStr(89,20-5,"github.com");
+    u8g2.drawStr(73,29-5,"/olikraus/u8g2");
   }
   else
   {
@@ -226,6 +235,6 @@ void loop(void) {
     drawLogo();
     drawURL();
   } while ( u8g2.nextPage() );
-  delay(1000);
+  //delay(1000);
 }
 

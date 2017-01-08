@@ -86,7 +86,7 @@
   It will consume about 40 bytes more in flash memory of the AVR.
   HVLine procedures are also used by the text drawing functions.
 */
-#define U8G2_HVLINE_SPEED_OPTIMIZATION
+//#define U8G2_HVLINE_SPEED_OPTIMIZATION
 
 /*
   The following macro enables all four drawing directions for glyphs and strings.
@@ -405,6 +405,9 @@ void u8g2_SetDisplayRotation(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
 
 /*==========================================*/
 /* u8g2_d_memory.c generated code start */
+uint8_t *u8g2_m_ssd1305_16_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_ssd1305_16_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_ssd1305_16_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_ssd1306_16_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_ssd1306_16_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_ssd1306_16_f(uint8_t *page_cnt);
@@ -459,6 +462,9 @@ uint8_t *u8g2_m_uc1611_30_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_st7565_16_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_st7565_16_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_st7565_16_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_st7565_17_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_st7565_17_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_st7565_17_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_st7567_17_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_st7567_17_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_st7567_17_f(uint8_t *page_cnt);
@@ -503,6 +509,12 @@ uint8_t *u8g2_m_a2printer_48_f(uint8_t *page_cnt);
 
 /*==========================================*/
 /* u8g2_d_setup.c generated code start */
+void u8g2_Setup_ssd1305_128x32_noname_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_ssd1305_128x32_noname_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_ssd1305_128x32_noname_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_ssd1305_i2c_128x32_noname_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_ssd1305_i2c_128x32_noname_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_ssd1305_i2c_128x32_noname_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_ssd1306_128x64_noname_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_ssd1306_128x64_vcomh0_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_ssd1306_128x64_noname_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
@@ -638,6 +650,9 @@ void u8g2_Setup_st7565_lm6059_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_ms
 void u8g2_Setup_st7565_nhd_c12832_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_nhd_c12832_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_nhd_c12832_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7565_ea_dogm132_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7565_ea_dogm132_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7565_ea_dogm132_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7567_pi_132x64_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7567_pi_132x64_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7567_pi_132x64_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
