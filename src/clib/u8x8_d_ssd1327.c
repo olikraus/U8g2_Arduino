@@ -303,6 +303,7 @@ uint8_t u8x8_d_ssd1327_seeed_96x96(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, v
       u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1327_seeed_96x96_flip1_seq);
       u8x8->x_offset = u8x8->display_info->flipmode_x_offset;
     }
+    return 1;
   }
   return 0;
 }
