@@ -101,9 +101,9 @@ static uint8_t u8x8_d_st7588_128x64_generic(u8x8_t *u8x8, uint8_t msg, uint8_t a
       u8x8_cad_StartTransfer(u8x8);
       
       u8x8_cad_SendCmd(u8x8, FS );
-      u8x8_cad_SendCmd(u8x8, 4 | (arg_int>>7) );
+      u8x8_cad_SendArg(u8x8, 4 | (arg_int>>7) );
       u8x8_cad_SendCmd(u8x8, FS | 1);
-      u8x8_cad_SendCmd(u8x8, 0x080 | arg_int );
+      u8x8_cad_SendArg(u8x8, 0x080 | arg_int );
       
       /* restore orientation */
       if ( u8x8->x_offset == 0 )
