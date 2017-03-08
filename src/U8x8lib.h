@@ -150,6 +150,9 @@ class U8X8 : public Print
       
     void clearDisplay(void) {
       u8x8_ClearDisplay(&u8x8); }
+
+    void fillDisplay(void) {
+      u8x8_FillDisplay(&u8x8); }
       
     void setPowerSave(uint8_t is_enable) {
       u8x8_SetPowerSave(&u8x8, is_enable); }
@@ -174,6 +177,9 @@ class U8X8 : public Print
 
     void refreshDisplay(void) {			// Dec 16: Only required for SSD1606
       u8x8_RefreshDisplay(&u8x8); }
+      
+    void clearLine(uint8_t line) {
+      u8x8_ClearLine(&u8x8, line); }
 
     void setContrast(uint8_t value) {
       u8x8_SetContrast(&u8x8, value); }
