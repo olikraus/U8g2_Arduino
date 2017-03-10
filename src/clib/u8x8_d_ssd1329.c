@@ -38,7 +38,7 @@
 
 
 
-static const uint8_t u8x8_d_ssd1329_128x96_nhd_init_seq[] = {
+static const uint8_t u8x8_d_ssd1329_128x96_noname_init_seq[] = {
     
   U8X8_START_TRANSFER(),             	/* enable chip, delay is part of the transfer start */
   
@@ -172,7 +172,7 @@ static uint8_t u8x8_d_ssd1329_128x96_generic(u8x8_t *u8x8, uint8_t msg, uint8_t 
     */
     case U8X8_MSG_DISPLAY_INIT:
       u8x8_d_helper_display_init(u8x8);
-      u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1329_128x96_nhd_init_seq);    
+      u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1329_128x96_noname_init_seq);    
       break;
     case U8X8_MSG_DISPLAY_SET_POWER_SAVE:
       if ( arg_int == 0 )
@@ -202,10 +202,13 @@ static uint8_t u8x8_d_ssd1329_128x96_generic(u8x8_t *u8x8, uint8_t msg, uint8_t 
 #endif
     case U8X8_MSG_DISPLAY_DRAW_TILE:
       u8x8_cad_StartTransfer(u8x8);
-      x = ((u8x8_tile_t *)arg_ptr)->x_pos;    
+      x = ((u8x8_tile_t *)arg_ptr)->x_pos;
       x *= 4;
     
       y = (((u8x8_tile_t *)arg_ptr)->y_pos);
+      
+      y += 4;		/* JUST FOR TESTING */
+    
       y *= 8;
       y += u8x8->x_offset;		/* x_offset is used as y offset for the ssd1329 */
     
