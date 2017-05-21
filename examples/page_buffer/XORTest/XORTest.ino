@@ -1,6 +1,10 @@
 /*
 
-  HelloWorld.ino
+  XORTest.ino
+  
+  Shows solid and transparent font modes with XOR draw.
+  Conclusion: Only use transparent font modes with XOR draw.
+  This example also demonstrates scrolling.
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -151,6 +155,40 @@
 
 // End of constructor list
 
+
+void testXOR(uint8_t x)
+{
+  u8g2.setFont(u8g2_font_ncenB14_tr);
+  //u8g2.setFont(u8g2_font_courB24_tn);
+  
+  u8g2.firstPage();
+  do {
+    /* Solid font mode with XOR drawing: Does not make much sense */
+    u8g2.setFontMode(0);
+    u8g2.setDrawColor(1);
+    u8g2.drawBox(10, 8, 10, 10);
+    u8g2.drawBox(40, 20, 30, 12);
+    u8g2.drawBox(100, 8, 4, 22);
+    
+    u8g2.setDrawColor(2);
+    u8g2.drawStr(x,26, "XOR Test");
+    u8g2.drawHLine(0, 29, 128);
+    
+    /* Transparent font mode with XOR drawing: looks good */
+    u8g2.setFontMode(1);
+    u8g2.setDrawColor(1);
+    u8g2.drawBox(10, 8+32, 10, 10);
+    u8g2.drawBox(40, 20+32, 30, 12);
+    u8g2.drawBox(100, 8+32, 4, 22);
+    u8g2.setDrawColor(2);
+    u8g2.drawStr(x,26+32, "XOR Test");
+    u8g2.drawHLine(0, 29+32, 128);
+
+
+  } while ( u8g2.nextPage() );
+}
+
+
 void setup(void) {
 
   /* U8g2 Project: SSD1306 Test Board */
@@ -162,28 +200,29 @@ void setup(void) {
   /* U8g2 Project: T6963 Test Board */
   //pinMode(18, OUTPUT);
   //digitalWrite(18, 1);	
-
-  /* U8g2 Project: KS0108 Test Board */
-  //pinMode(16, OUTPUT);
-  //digitalWrite(16, 0);	
-
-  /* U8g2 Project: LC7981 Test Board, connect RW to GND */
-  //pinMode(17, OUTPUT);
-  //digitalWrite(17, 0);	
-
-  /* U8g2 Project: Pax Instruments Shield: Enable Backlight */
-  //pinMode(6, OUTPUT);
-  //digitalWrite(6, 0);	
-
+  
   u8g2.begin();  
 }
 
+
+
 void loop(void) {
-  u8g2.firstPage();
-  do {
-    u8g2.setFont(u8g2_font_ncenB14_tr);
-    u8g2.drawStr(0,24,"Hello World!");
-  } while ( u8g2.nextPage() );
-  //delay(1000);
+  uint8_t i;
+  i = 20;
+  do
+  {
+    testXOR(20-i);
+    delay(15);
+    i--;
+  } while( i != 0 );
+  i = 20;
+  delay(15);
+  do
+  {
+    testXOR(i);
+    delay(15);
+    i--;
+  } while( i != 0 );
+  delay(15);
 }
 

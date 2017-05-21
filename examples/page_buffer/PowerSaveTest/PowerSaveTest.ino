@@ -1,7 +1,11 @@
 /*
 
-  HelloWorld.ino
+  PowerSaveTest.ino
 
+  This test will turn on and off your display for two seconds.
+  If the text "power off" is visible on your display, then power save mode
+  does not work with your display.
+  
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
   Copyright (c) 2016, olikraus@gmail.com
@@ -42,16 +46,6 @@
 #ifdef U8X8_HAVE_HW_I2C
 #include <Wire.h>
 #endif
-
-
-/*
-  U8glib Example Overview:
-    Frame Buffer Examples: clearBuffer/sendBuffer. Fast, but may not work with all Arduino boards because of RAM consumption
-    Page Buffer Examples: firstPage/nextPage. Less RAM usage, should work with all Arduino boards.
-    U8x8 Text Only Example: No RAM usage, direct communication with display controller. No graphics, 8x8 Text only.
-    
-  This is a page buffer example.    
-*/
 
 // Please UNCOMMENT one of the contructor lines below
 // U8g2 Contructor List (Picture Loop Page Buffer)
@@ -151,39 +145,28 @@
 
 // End of constructor list
 
+
 void setup(void) {
+  u8g2.begin();
+  u8g2.setFont(u8g2_font_6x10_tr);
+}
 
-  /* U8g2 Project: SSD1306 Test Board */
-  //pinMode(10, OUTPUT);
-  //pinMode(9, OUTPUT);
-  //digitalWrite(10, 0);
-  //digitalWrite(9, 0);		
 
-  /* U8g2 Project: T6963 Test Board */
-  //pinMode(18, OUTPUT);
-  //digitalWrite(18, 1);	
-
-  /* U8g2 Project: KS0108 Test Board */
-  //pinMode(16, OUTPUT);
-  //digitalWrite(16, 0);	
-
-  /* U8g2 Project: LC7981 Test Board, connect RW to GND */
-  //pinMode(17, OUTPUT);
-  //digitalWrite(17, 0);	
-
-  /* U8g2 Project: Pax Instruments Shield: Enable Backlight */
-  //pinMode(6, OUTPUT);
-  //digitalWrite(6, 0);	
-
-  u8g2.begin();  
+void draw(const char *s)
+{
+  u8g2.firstPage();
+  do {
+    u8g2.drawStr(2,15,"PowerSaveTest");    
+    u8g2.drawStr(2,30,s);    
+    u8g2.drawFrame(0,0,u8g2.getDisplayWidth(),u8g2.getDisplayHeight() );
+  } while ( u8g2.nextPage() );
+  delay(2000);
 }
 
 void loop(void) {
-  u8g2.firstPage();
-  do {
-    u8g2.setFont(u8g2_font_ncenB14_tr);
-    u8g2.drawStr(0,24,"Hello World!");
-  } while ( u8g2.nextPage() );
-  //delay(1000);
+  u8g2.setPowerSave(0);
+  draw("power on");
+  u8g2.setPowerSave(1);
+  draw("power off");
 }
 
