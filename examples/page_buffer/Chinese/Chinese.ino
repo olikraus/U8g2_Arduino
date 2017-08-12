@@ -1,6 +1,8 @@
 /*
 
-  HelloWorld.ino
+  Chinese.ino
+  
+  Use the (Arduino compatible) u8g2 function "print"  to draw a text.
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -42,7 +44,6 @@
 #ifdef U8X8_HAVE_HW_I2C
 #include <Wire.h>
 #endif
-
 
 /*
   U8glib Example Overview:
@@ -156,38 +157,23 @@
 
 // End of constructor list
 
+
 void setup(void) {
-
-  /* U8g2 Project: SSD1306 Test Board */
-  //pinMode(10, OUTPUT);
-  //pinMode(9, OUTPUT);
-  //digitalWrite(10, 0);
-  //digitalWrite(9, 0);		
-
-  /* U8g2 Project: T6963 Test Board */
-  //pinMode(18, OUTPUT);
-  //digitalWrite(18, 1);	
-
-  /* U8g2 Project: KS0108 Test Board */
-  //pinMode(16, OUTPUT);
-  //digitalWrite(16, 0);	
-
-  /* U8g2 Project: LC7981 Test Board, connect RW to GND */
-  //pinMode(17, OUTPUT);
-  //digitalWrite(17, 0);	
-
-  /* U8g2 Project: Pax Instruments Shield: Enable Backlight */
-  //pinMode(6, OUTPUT);
-  //digitalWrite(6, 0);	
-
-  u8g2.begin();  
+  u8g2.begin();
+  u8g2.enableUTF8Print();		// enable UTF8 support for the Arduino print() function
 }
 
 void loop(void) {
+  u8g2.setFont(u8g2_font_unifont_t_chinese2);  // use chinese2 for all the glyphs of "你好世界"
+  //u8g2.setFont(u8g2_font_b10_t_japanese1);  // all the glyphs of "こんにちは世界" are already included in japanese1: Lerning Level 1-6
+  u8g2.setFontDirection(0);
   u8g2.firstPage();
   do {
-    u8g2.setFont(u8g2_font_ncenB10_tr);
-    u8g2.drawStr(0,24,"Hello World!");
+    u8g2.setCursor(0, 15);
+    u8g2.print("Hello World!");
+    u8g2.setCursor(0, 40);
+    u8g2.print("你好世界");		// Chinese "Hello World" 
+    //u8g2.print("こんにちは世界");		// Japanese "Hello World" 
   } while ( u8g2.nextPage() );
   delay(1000);
 }
