@@ -273,12 +273,12 @@ static void u8x8_d_il3820_draw_tile(u8x8_t *u8x8, uint8_t arg_int, void *arg_ptr
   u8x8_cad_SendCmd(u8x8, 0x045 );	/* window start column */
   u8x8_cad_SendArg(u8x8, 0);
   u8x8_cad_SendArg(u8x8, 0);
-  u8x8_cad_SendArg(u8x8, 199);		/* end of display */
+  u8x8_cad_SendArg(u8x8, 296-1);		/* end of display */
   u8x8_cad_SendArg(u8x8, 0);
 
   u8x8_cad_SendCmd(u8x8, 0x044 );	/* window end page */
   u8x8_cad_SendArg(u8x8, page);
-  u8x8_cad_SendArg(u8x8, page);
+  u8x8_cad_SendArg(u8x8, page+1);
   //u8x8_cad_SendArg(u8x8, 0);
   //u8x8_cad_SendArg(u8x8, 199/8);
 
