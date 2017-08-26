@@ -82,11 +82,11 @@ static const uint8_t u8x8_d_il3820_296x128_init_seq[] = {
   
   U8X8_CA(0x11, 0x01),	/* Define data entry mode, x&y inc, x first*/
   
-  U8X8_CAA(0x44, 0, 31),	/* RAM x start & end, 32*4=128 */
+  U8X8_CAA(0x44, 0, 29),	/* RAM x start & end, 32*4=128 */
   U8X8_CAAAA(0x45, 0, 0, 295&255, 295>>8),	/* RAM y start & end, 0..295 */
   
   U8X8_CA(0x4e, 0),	/* set x pos, 0..29? */
-  U8X8_CAA(0x4f, 0&255, 0>>8),	/* set y pos, 0...320??? */
+  U8X8_CAA(0x4f, 100&255, 100>>8),	/* set y pos, 0...320??? */
 
   U8X8_CA(0x22, 0xc0),	/* display update seq. option: enable clk, enable CP, .... todo: this is never activated */
   
@@ -119,8 +119,7 @@ according to section 6.8:
 
 */
 /*
-static unsigned char LUTDefault_full[] = 
-{
+  static unsigned char LUTDefault_full[] = 
   0x32,
   0x02,0x02,0x01,0x11,0x12,  0x12,0x22,0x22,0x66,0x69,
   0x69,0x59,0x58,0x99,0x99,  0x88,0x00,0x00,0x00,0x00,
@@ -178,7 +177,40 @@ static unsigned char LUTDefault_full[] =
   U8X8_CA(0x3b, 0x08),	/* gate time */
   U8X8_CA(0x3c, 0x33),	/* select boarder waveform */
   U8X8_CA(0x22, 0xc4),	/* display update seq. option: clk -> CP -> LUT -> initial display -> pattern display */
+
+
+  U8X8_CA(0x11, 0x07),	/* Define data entry mode, x&y inc, x first*/
+
+  U8X8_CAA(0x44, 0, 29),	/* RAM x start & end, 32*4=128 */
+  U8X8_CAAAA(0x45, 0, 0, 295&255, 295>>8),	/* RAM y start & end, 0..295 */
   
+  U8X8_CA(0x4e, 0),	/* set x pos, 0..29? */
+  U8X8_CAA(0x4f, 0, 0),	/* set y pos, 0...320??? */
+
+  U8X8_C(0x024),		/* data write */
+
+  U8X8_D1(0x000),
+  U8X8_D1(0x000),
+  U8X8_D1(0x081),
+  U8X8_D1(0x081),
+
+  U8X8_D1(0x0c3),
+  U8X8_D1(0x0c3),
+  U8X8_D1(0x0e7),
+  U8X8_D1(0x0e7),
+
+
+
+  U8X8_D1(0x00f),
+  U8X8_D1(0x00f),
+  U8X8_D1(0x00f),
+  U8X8_D1(0x00f),
+
+  U8X8_D1(0x00f),
+  U8X8_D1(0x00f),
+  U8X8_D1(0x00f),
+  U8X8_D1(0x00f),
+
   U8X8_END_TRANSFER(),             	/* disable chip */
   U8X8_END()             			/* end of sequence */
 };
@@ -264,29 +296,27 @@ static void u8x8_d_il3820_draw_tile(u8x8_t *u8x8, uint8_t arg_int, void *arg_ptr
   x *= 8;
   x += u8x8->x_offset;
 
-  u8x8_cad_SendCmd(u8x8, 0x00f );	/* scan start */
-  u8x8_cad_SendArg(u8x8, 0);
-
-  u8x8_cad_SendCmd(u8x8, 0x011 );	/* cursor increment mode */
-  u8x8_cad_SendArg(u8x8, 3);
-
-  u8x8_cad_SendCmd(u8x8, 0x045 );	/* window start column */
-  u8x8_cad_SendArg(u8x8, 0);
-  u8x8_cad_SendArg(u8x8, 0);
-  u8x8_cad_SendArg(u8x8, 296-1);		/* end of display */
-  u8x8_cad_SendArg(u8x8, 0);
-
-  u8x8_cad_SendCmd(u8x8, 0x044 );	/* window end page */
-  u8x8_cad_SendArg(u8x8, page);
-  u8x8_cad_SendArg(u8x8, page+1);
+  //u8x8_cad_SendCmd(u8x8, 0x00f );	/* scan start */
   //u8x8_cad_SendArg(u8x8, 0);
-  //u8x8_cad_SendArg(u8x8, 199/8);
 
-  u8x8_cad_SendCmd(u8x8, 0x04f );	/* window column */
+  //u8x8_cad_SendCmd(u8x8, 0x011 );	/* cursor increment mode */
+  //u8x8_cad_SendArg(u8x8, 3);
+
+  //u8x8_cad_SendCmd(u8x8, 0x045 );	/* window start column */
+  //u8x8_cad_SendArg(u8x8, 0);
+  //u8x8_cad_SendArg(u8x8, 0);
+  //u8x8_cad_SendArg(u8x8, (296-1)&255);		/* end of display */
+  //u8x8_cad_SendArg(u8x8, (296-1)>>8);
+
+  //u8x8_cad_SendCmd(u8x8, 0x044 );	/* window end page */
+  //u8x8_cad_SendArg(u8x8, page);
+  //u8x8_cad_SendArg(u8x8, page+1);
+
+  u8x8_cad_SendCmd(u8x8, 0x04f );	/* set cursor column */
   u8x8_cad_SendArg(u8x8, x&255);
   u8x8_cad_SendArg(u8x8, x>>8);
 
-  u8x8_cad_SendCmd(u8x8, 0x04e );	/* window row */
+  u8x8_cad_SendCmd(u8x8, 0x04e );	/* set cursor row */
   u8x8_cad_SendArg(u8x8, page);
 
   u8x8_cad_SendCmd(u8x8, 0x024 );
@@ -323,6 +353,10 @@ static uint8_t u8x8_d_il3820_296x128_generic(u8x8_t *u8x8, uint8_t msg, uint8_t 
 
       u8x8_d_helper_display_init(u8x8);
       u8x8_cad_SendSequence(u8x8, u8x8_d_il3820_296x128_init_seq);    
+
+      //u8x8_cad_SendSequence(u8x8, u8x8_d_il3820_to_display_seq);    
+      //for(;;)
+	//;
     
 #ifdef NOT_USED
       /* STRATEGY FOR SSD1606 */
