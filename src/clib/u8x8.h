@@ -552,6 +552,7 @@ void u8x8_ClearLine(u8x8_t *u8x8, uint8_t line);
 
 uint8_t u8x8_cad_SendCmd(u8x8_t *u8x8, uint8_t cmd) U8X8_NOINLINE;
 uint8_t u8x8_cad_SendArg(u8x8_t *u8x8, uint8_t arg) U8X8_NOINLINE;
+uint8_t u8x8_cad_SendMultipleArg(u8x8_t *u8x8, uint8_t cnt, uint8_t arg) U8X8_NOINLINE;
 uint8_t u8x8_cad_SendData(u8x8_t *u8x8, uint8_t cnt, uint8_t *data) U8X8_NOINLINE;
 uint8_t u8x8_cad_StartTransfer(u8x8_t *u8x8) U8X8_NOINLINE;
 uint8_t u8x8_cad_EndTransfer(u8x8_t *u8x8) U8X8_NOINLINE;
@@ -802,6 +803,7 @@ uint8_t u8x8_d_pcf8812_96x65(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *a
 uint8_t u8x8_d_ssd1606_172x72(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_ssd1607_200x200(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_il3820_296x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_il3820_v2_296x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_lc7981_160x80(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_lc7981_160x160(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_lc7981_240x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
