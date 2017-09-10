@@ -69,7 +69,7 @@
   Use 16 Bit mode for any display with more than 240 pixel in one 
   direction.
 */
-#define U8G2_16BIT
+//#define U8G2_16BIT
 
 
 /*
@@ -999,7 +999,7 @@ void u8g2_SetupBuffer_TGA_LCD(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
 
 /*==========================================*/
 /* u8x8_d_bitmap.c */
-void u8g2_SetupBitmap(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb, uint16_t tile_width, uint16_t tile_height);
+void u8g2_SetupBitmap(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb, uint16_t pixel_width, uint16_t pixel_height);
 
 
 /*==========================================*/
