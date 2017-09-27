@@ -344,7 +344,7 @@ static const uint8_t u8x8_d_uc1611_ew50850_init_seq[] = {
   
   //U8X8_C(0x0a9),            			/* display enable */
 
-  U8X8_C(0x0d1),            			/* display pattern */  
+  U8X8_C(0x0d2),            			/* gray level mode: 16 gray shades */  
   U8X8_C(0x089),            			/* auto increment */
   U8X8_C(0x0c0),            			/* LCD Mapping Bit 0: MSF, Bit 1: MX, Bit 2: MY */
   U8X8_C(0x000),		                /* column low nibble */
@@ -412,7 +412,7 @@ static const uint8_t u8x8_d_uc1611_powersave1_seq[] = {
 /* EW50850, 240x160 */
 uint8_t u8x8_d_uc1611_ew50850(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 {
-  uint8_t x, y, c, i, v, m0, m1;
+  uint8_t x, y, c, i, v, m0, m1, ai;
   uint8_t *ptr;
   /* msg not handled, then try here */
   switch(msg)
@@ -424,25 +424,24 @@ uint8_t u8x8_d_uc1611_ew50850(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *
       x *= 8;
       x += u8x8->x_offset;
    
-      u8x8_cad_SendCmd(u8x8, 0x000 | ((x&15)));
-      u8x8_cad_SendCmd(u8x8, 0x010 | (x>>4) );
-    
       y = ((u8x8_tile_t *)arg_ptr)->y_pos;
       y*=4;
+      m0 = 1;
+      m1 = 2;
       for( i = 0; i < 4; i++ )
       {
-	m0 = 1<<(i*2);
-	m1 = m0;
-	m1 <<= 1;
+        u8x8_cad_SendCmd(u8x8, 0x000 | ((x&15)));
+        u8x8_cad_SendCmd(u8x8, 0x010 | (x>>4) );
+    
 	u8x8_cad_SendCmd(u8x8, 0x060 | (y&15));
 	u8x8_cad_SendCmd(u8x8, 0x070 | (y>>4));
       
-	c = ((u8x8_tile_t *)arg_ptr)->cnt;
-	c *= 8;
-	ptr = ((u8x8_tile_t *)arg_ptr)->tile_ptr;
-	
+	ai = arg_int;
 	do
 	{
+	  c = ((u8x8_tile_t *)arg_ptr)->cnt;
+	  c *= 8;
+	  ptr = ((u8x8_tile_t *)arg_ptr)->tile_ptr;
 	  while( c > 0 )
 	  {
 	    v = 0;
@@ -452,10 +451,13 @@ uint8_t u8x8_d_uc1611_ew50850(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *
 	      v|= 0xf0;
 	    u8x8_cad_SendData(u8x8, 1, &v);	/* note: SendData can not handle more than 255 bytes */
 	    c--;
+            ptr++;
 	  }
-	  arg_int--;
-	} while( arg_int > 0 );
+	  ai--;
+	} while( ai > 0 );
 	
+	m0 <<= 2;
+	m1 <<= 2;
 	y++;
       }
       u8x8_cad_EndTransfer(u8x8);
