@@ -336,7 +336,8 @@ struct u8g2_struct
   uint8_t draw_color;		/* 0: clear pixel, 1: set pixel, modified and restored by font procedures */
 					/* draw_color can be used also directly by the user API */
 					
-  uint8_t is_auto_page_clear; 		/* set to 0 to disable automatic page clear in firstPage() and nextPage() */
+	// the following variable should be renamed to is_buffer_auto_clear
+  uint8_t is_auto_page_clear; 		/* set to 0 to disable automatic clear of the buffer in firstPage() and nextPage() */
   
 #ifdef U8G2_WITH_HVLINE_COUNT
   unsigned long hv_cnt;
@@ -355,7 +356,7 @@ struct u8g2_struct
 #define u8g2_SetUserPtr(u8g2, p) ((u8g2_GetU8x8(u8g2))->user_ptr = (p))
 #endif
 
-
+// this should be renamed to SetBufferAutoClear 
 #define u8g2_SetAutoPageClear(u8g2, mode) ((u8g2)->is_auto_page_clear = (mode))
 
 /*==========================================*/
@@ -417,144 +418,93 @@ void u8g2_SetDisplayRotation(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
 
 /*==========================================*/
 /* u8g2_d_memory.c generated code start */
-uint8_t *u8g2_m_ssd1305_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1305_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1305_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1306_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1306_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1306_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_sh1106_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_sh1106_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_sh1106_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1306_8_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1306_8_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1306_8_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1306_12_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1306_12_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1306_12_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1309_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1309_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1309_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1325_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1325_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1325_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1327_12_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1327_12_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1327_12_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1329_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1329_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1329_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ld7032_8_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ld7032_8_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ld7032_8_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7920_24_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7920_24_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7920_24_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7920_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7920_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7920_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ls013b7dh03_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ls013b7dh03_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ls013b7dh03_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1701_13_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1701_13_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1701_13_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1701_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1701_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1701_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_pcd8544_11_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_pcd8544_11_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_pcd8544_11_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_pcf8812_12_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_pcf8812_12_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_pcf8812_12_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1604_24_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1604_24_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1604_24_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1608_30_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1608_30_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1608_30_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1610_20_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1610_20_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1610_20_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1611_30_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1611_30_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_uc1611_30_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7565_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7565_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7565_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7565_17_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7565_17_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7565_17_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7567_17_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7567_17_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7567_17_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7567_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7567_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7567_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7588_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7588_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_st7588_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_nt7534_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_nt7534_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_nt7534_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ist3020_24_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ist3020_24_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ist3020_24_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_sbn1661_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_sbn1661_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_sbn1661_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_sed1520_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_sed1520_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_sed1520_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ks0108_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ks0108_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ks0108_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ks0108_24_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ks0108_24_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ks0108_24_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_lc7981_20_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_lc7981_20_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_lc7981_20_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_lc7981_30_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_lc7981_30_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_lc7981_30_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_t6963_30_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_t6963_30_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_t6963_30_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_t6963_32_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_t6963_32_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_t6963_32_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_t6963_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_t6963_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_t6963_16_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1322_32_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1322_32_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1322_32_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1606_22_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1606_22_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1606_22_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1607_25_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1607_25_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ssd1607_25_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_il3820_37_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_il3820_37_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_il3820_37_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_sed1330_30_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_sed1330_30_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_sed1330_30_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ra8835_30_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ra8835_30_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ra8835_30_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_ra8835_40_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_ra8835_40_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_ra8835_40_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_max7219_4_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_max7219_4_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_max7219_4_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_a2printer_48_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_a2printer_48_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_a2printer_48_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_4_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_4_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_4_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_8_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_8_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_8_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_8_6_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_8_6_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_8_6_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_8_4_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_8_4_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_8_4_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_2_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_2_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_2_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_12_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_12_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_12_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_12_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_12_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_12_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_24_4_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_24_4_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_24_4_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_16_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_16_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_16_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_13_8_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_13_8_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_13_8_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_11_6_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_11_6_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_11_6_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_9_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_9_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_9_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_24_8_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_24_8_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_24_8_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_30_8_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_30_8_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_30_8_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_30_15_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_30_15_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_30_15_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_30_16_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_30_16_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_30_16_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_13_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_13_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_13_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_30_20_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_30_20_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_30_20_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_17_4_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_17_4_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_17_4_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_17_8_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_17_8_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_17_8_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_10_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_10_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_10_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_20_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_20_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_20_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_8_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_8_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_8_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_22_9_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_22_9_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_22_9_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_25_25_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_25_25_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_25_25_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_37_16_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_37_16_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_37_16_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_40_30_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_40_30_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_40_30_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_4_1_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_4_1_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_4_1_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_48_30_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_48_30_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_48_30_f(uint8_t *page_cnt);
 
 /* u8g2_d_memory.c generated code end */
 
@@ -848,7 +798,8 @@ void u8g2_Setup_a2printer_384x240_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x
 void u8g2_SendBuffer(u8g2_t *u8g2);
 void u8g2_ClearBuffer(u8g2_t *u8g2);
 
-void u8g2_SetPageCurrTileRow(u8g2_t *u8g2, uint8_t row) U8G2_NOINLINE;
+void u8g2_SetBufferCurrTileRow(u8g2_t *u8g2, uint8_t row) U8G2_NOINLINE;
+
 void u8g2_FirstPage(u8g2_t *u8g2);
 uint8_t u8g2_NextPage(u8g2_t *u8g2);
 
@@ -856,7 +807,9 @@ uint8_t u8g2_NextPage(u8g2_t *u8g2);
 #define u8g2_GetBufferTileHeight(u8g2)	((u8g2)->tile_buf_height)
 #define u8g2_GetBufferTileWidth(u8g2)	(u8g2_GetU8x8(u8g2)->display_info->tile_width)
 /* the following variable is only valid after calling u8g2_FirstPage */
+/* renamed from Page to Buffer: the CurrTileRow is the current row of the buffer, issue #370 */
 #define u8g2_GetPageCurrTileRow(u8g2) ((u8g2)->tile_curr_row)
+#define u8g2_GetBufferCurrTileRow(u8g2) ((u8g2)->tile_curr_row)
 
 /*==========================================*/
 /* u8g2_ll_hvline.c */
