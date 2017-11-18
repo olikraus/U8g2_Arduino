@@ -8,5 +8,5 @@ Description: https://github.com/olikraus/u8g2/wiki
 
 Issue Tracker: https://github.com/olikraus/u8g2/issues
 
-Download (2.20.6): https://github.com/olikraus/U8g2_Arduino/archive/master.zip
+Download (2.20.7): https://github.com/olikraus/U8g2_Arduino/archive/master.zip
 
