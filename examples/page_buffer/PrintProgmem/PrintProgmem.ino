@@ -1,6 +1,12 @@
 /*
 
-  HelloWorld.ino
+  PrintProgmem.ino
+  
+  AVR Architecture:
+  Use the (Arduino compatible) u8g2 function "print"  to draw a string,
+  which is located in PROGMEM.
+  For string constants use the F() macro, but this example use global 
+  strings instead.
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -43,7 +49,6 @@
 #include <Wire.h>
 #endif
 
-
 /*
   U8glib Example Overview:
     Frame Buffer Examples: clearBuffer/sendBuffer. Fast, but may not work with all Arduino boards because of RAM consumption
@@ -53,7 +58,6 @@
   This is a page buffer example.    
 */
 
-// Please UNCOMMENT one of the contructor lines below
 // U8g2 Contructor List (Picture Loop Page Buffer)
 // The complete list is available here: https://github.com/olikraus/u8g2/wiki/u8g2setupcpp
 // Please update the pin numbers according to your setup. Use U8X8_PIN_NONE if the reset pin is not connected
@@ -193,38 +197,34 @@
 
 
 void setup(void) {
-
-  /* U8g2 Project: SSD1306 Test Board */
-  pinMode(10, OUTPUT);
-  pinMode(9, OUTPUT);
-  digitalWrite(10, 0);
-  digitalWrite(9, 0);		
-
-  /* U8g2 Project: T6963 Test Board */
-  //pinMode(18, OUTPUT);
-  //digitalWrite(18, 1);	
-
-  /* U8g2 Project: KS0108 Test Board */
-  //pinMode(16, OUTPUT);
-  //digitalWrite(16, 0);	
-
-  /* U8g2 Project: LC7981 Test Board, connect RW to GND */
-  //pinMode(17, OUTPUT);
-  //digitalWrite(17, 0);	
-
-  /* U8g2 Project: Pax Instruments Shield: Enable Backlight */
-  //pinMode(6, OUTPUT);
-  //digitalWrite(6, 0);	
-
-  u8g2.begin();  
+  u8g2.begin();
 }
 
+const char s[] PROGMEM = "Progmem";
+const char s1[] PROGMEM  = "ABC" ;
+const char s2[] PROGMEM  = "DEF" ;
+const char s3[] PROGMEM  = "GHI" ;
+const char s4[] PROGMEM  = "JKL" ;
+
+const char *a[] = { s1, s2, s3, s4 };
+
+int i = 0;
+
 void loop(void) {
+  u8g2.setFont(u8g2_font_ncenB14_tr);
   u8g2.firstPage();
   do {
-    u8g2.setFont(u8g2_font_ncenB10_tr);
-    u8g2.drawStr(0,24,"Hello World!");
+  
+    u8g2.setCursor(0, 20);
+    u8g2.print((class __FlashStringHelper *)s);   // print a sting, located in PROGMEM
+    
+    u8g2.setCursor(0, 40);
+    u8g2.print((class __FlashStringHelper *)a[i]);  // print a sting (PROGMEM) via RAM array.
+    
   } while ( u8g2.nextPage() );
-  //delay(1000);
+  delay(1000);
+  i++;
+  if ( i >= 4 )
+    i = 0;
 }
 
