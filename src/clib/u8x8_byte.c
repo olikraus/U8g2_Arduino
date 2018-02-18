@@ -61,6 +61,25 @@ uint8_t u8x8_byte_EndTransfer(u8x8_t *u8x8)
   return u8x8->byte_cb(u8x8, U8X8_MSG_BYTE_END_TRANSFER, 0, NULL);
 }
 
+/*=========================================*/
+
+uint8_t u8x8_byte_empty(U8X8_UNUSED u8x8_t *u8x8, uint8_t msg, U8X8_UNUSED uint8_t arg_int, U8X8_UNUSED void *arg_ptr)
+{
+  switch(msg)
+  {
+    case U8X8_MSG_BYTE_SEND:
+    case U8X8_MSG_BYTE_INIT:
+    case U8X8_MSG_BYTE_SET_DC:
+    case U8X8_MSG_BYTE_START_TRANSFER:
+    case U8X8_MSG_BYTE_END_TRANSFER:
+      break;	/* do nothing */
+  }
+  return 1;	/* always succeed */
+}
+
+
+/*=========================================*/
+
 
 /*
   Uses:
@@ -398,7 +417,8 @@ uint8_t u8x8_byte_sed1520(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_
 	
 	u8x8_gpio_Delay(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->data_setup_time_ns);
 	u8x8_gpio_call(u8x8, enable_pin, 1);
-	u8x8_gpio_Delay(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->write_pulse_width_ns);
+	u8x8_gpio_Delay(u8x8, U8X8_MSG_DELAY_NANO, 200);		/* KS0108 requires 450 ns, use 200 here */
+	u8x8_gpio_Delay(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->write_pulse_width_ns);  /* expect 250 here */
 	u8x8_gpio_call(u8x8, enable_pin, 0);
       }
       break;
