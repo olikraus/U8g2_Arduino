@@ -191,19 +191,19 @@ class U8X8 : public Print
     void setPowerSave(uint8_t is_enable) {
       u8x8_SetPowerSave(&u8x8, is_enable); }
 
-    void begin(void) {
-      initDisplay(); clearDisplay(); setPowerSave(0); }
+    bool begin(void) {
+      initDisplay(); clearDisplay(); setPowerSave(0); return 1; }
 
 #ifdef U8X8_USE_PINS 
     /* use U8X8_PIN_NONE if a pin is not required */
-    void begin(uint8_t menu_select_pin, uint8_t menu_next_pin, uint8_t menu_prev_pin, uint8_t menu_up_pin = U8X8_PIN_NONE, uint8_t menu_down_pin = U8X8_PIN_NONE, uint8_t menu_home_pin = U8X8_PIN_NONE) {
+    bool begin(uint8_t menu_select_pin, uint8_t menu_next_pin, uint8_t menu_prev_pin, uint8_t menu_up_pin = U8X8_PIN_NONE, uint8_t menu_down_pin = U8X8_PIN_NONE, uint8_t menu_home_pin = U8X8_PIN_NONE) {
       setMenuSelectPin(menu_select_pin);
       setMenuNextPin(menu_next_pin);
       setMenuPrevPin(menu_prev_pin);
       setMenuUpPin(menu_up_pin);
       setMenuDownPin(menu_down_pin);
       setMenuHomePin(menu_home_pin);
-      begin(); }
+      return begin(); }
 #endif
       
     void setFlipMode(uint8_t mode) {
@@ -230,6 +230,9 @@ class U8X8 : public Print
     void draw2x2Glyph(uint8_t x, uint8_t y, uint8_t encoding) {
       u8x8_Draw2x2Glyph(&u8x8, x, y, encoding); }
 
+    void draw1x2Glyph(uint8_t x, uint8_t y, uint8_t encoding) {
+      u8x8_Draw1x2Glyph(&u8x8, x, y, encoding); }
+
     void drawString(uint8_t x, uint8_t y, const char *s) {
       u8x8_DrawString(&u8x8, x, y, s); }
       
@@ -238,9 +241,15 @@ class U8X8 : public Print
 
     void draw2x2String(uint8_t x, uint8_t y, const char *s) {
       u8x8_Draw2x2String(&u8x8, x, y, s); }
+
+    void draw1x2String(uint8_t x, uint8_t y, const char *s) {
+      u8x8_Draw1x2String(&u8x8, x, y, s); }
       
     void draw2x2UTF8(uint8_t x, uint8_t y, const char *s) {
       u8x8_Draw2x2UTF8(&u8x8, x, y, s); }
+
+    void draw1x2UTF8(uint8_t x, uint8_t y, const char *s) {
+      u8x8_Draw1x2UTF8(&u8x8, x, y, s); }
       
     uint8_t getUTF8Len(const char *s) {
       return u8x8_GetUTF8Len(&u8x8, s); }
