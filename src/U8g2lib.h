@@ -207,6 +207,8 @@ class U8G2 : public Print
     void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2) 
       { u8g2_DrawTriangle(&u8g2, x0, y0, x1, y1, x2, y2); }
       
+    /* u8log_u8g2.c */
+    void drawLog(u8g2_uint_t x, u8g2_uint_t y, class U8G2LOG &u8g2log);
     
     /* u8g2_font.c */
 
@@ -302,6 +304,65 @@ uint8_t u8g2_UserInterfaceInputValue(u8g2_t *u8g2, const char *title, const char
     u8g2_uint_t getWidth() { return u8g2_GetDisplayWidth(&u8g2); }
     
 };
+
+class U8G2LOG : public Print
+{
+  
+  public:
+    u8log_t u8log;
+  
+    /* the constructor does nothing, use begin() instead */
+    U8G2LOG(void) { }
+  
+    /* connect to u8g2, draw to u8g2 whenever required */
+    bool begin(class U8G2 &u8g2, uint8_t width, uint8_t height, uint8_t *buf)  { 
+      u8log_Init(&u8log, width, height, buf);      
+      u8log_SetCallback(&u8log, u8log_u8g2_cb, u8g2.getU8g2());
+      return true;
+    }
+
+    /* disconnected version, manual redraw required */
+    bool begin(uint8_t width, uint8_t height, uint8_t *buf) { 
+      u8log_Init(&u8log, width, height, buf);  
+      return true;
+    }
+    
+    void setLineHeightOffset(int8_t line_height_offset) {
+      u8log_SetLineHeightOffset(&u8log, line_height_offset); }
+
+    void setRedrawMode(uint8_t is_redraw_line_for_each_char) {
+      u8log_SetRedrawMode(&u8log, is_redraw_line_for_each_char); }
+    
+    /* virtual function for print base class */    
+    size_t write(uint8_t v) {
+      u8log_WriteChar(&u8log, v);
+      return 1;
+     }
+
+    size_t write(const uint8_t *buffer, size_t size) {
+      size_t cnt = 0;
+      while( size > 0 ) {
+	cnt += write(*buffer++); 
+	size--;
+      }
+      return cnt;
+    }  
+
+    void writeString(const char *s) { u8log_WriteString(&u8log, s); }
+    void writeChar(uint8_t c) { u8log_WriteChar(&u8log, c); }
+    void writeHex8(uint8_t b) { u8log_WriteHex8(&u8log, b); }
+    void writeHex16(uint16_t v) { u8log_WriteHex16(&u8log, v); }
+    void writeHex32(uint32_t v) { u8log_WriteHex32(&u8log, v); }
+    void writeDec8(uint8_t v, uint8_t d) { u8log_WriteDec8(&u8log, v, d); }
+    void writeDec16(uint8_t v, uint8_t d) { u8log_WriteDec16(&u8log, v, d); }    
+};
+
+/* u8log_u8g2.c */
+inline void U8G2::drawLog(u8g2_uint_t x, u8g2_uint_t y, class U8G2LOG &u8g2log)
+{
+  u8g2_DrawLog(&u8g2, x, y, &(u8g2log.u8log)); 
+}
+
 
 /* 
   U8G2_<controller>_<display>_<memory>_<communication> 

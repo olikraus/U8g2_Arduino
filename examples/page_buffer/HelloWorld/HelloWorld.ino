@@ -211,10 +211,10 @@
 void setup(void) {
 
   /* U8g2 Project: SSD1306 Test Board */
-  pinMode(10, OUTPUT);
-  pinMode(9, OUTPUT);
-  digitalWrite(10, 0);
-  digitalWrite(9, 0);		
+  //pinMode(10, OUTPUT);
+  //pinMode(9, OUTPUT);
+  //digitalWrite(10, 0);
+  //digitalWrite(9, 0);		
 
   /* U8g2 Project: T6963 Test Board */
   //pinMode(18, OUTPUT);

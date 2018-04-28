@@ -228,6 +228,8 @@
   U8G2_ST75256_JLX256128_1_4W_SW_SPI		MKR Zero		Clip=2.0 Box=2.0  @=1.2 Pix=1.3
   U8G2_ST75256_JLX256128_1_4W_HW_SPI		MKR Zero		Clip=30.3 Box=31.0  @=2.6 Pix=2.9
 
+  23 Aor 2018, Arduino 1.8.4, 8 Bit Mode
+  U8G2_SSD1306_128X64_NONAME_1_3W_SW_SPI 	Uno			Clip=2.7 Box=2.9  @=1.8 Pix=2.2
 */
 
 
@@ -534,10 +536,10 @@ void show_result(const char *s, uint16_t fps) {
 void setup(void) {
 
   /* U8g2 Project: SSD1306 Test Board */
-  //pinMode(10, OUTPUT);
-  //pinMode(9, OUTPUT);
-  //digitalWrite(10, 0);
-  //digitalWrite(9, 0);		
+  pinMode(10, OUTPUT);
+  pinMode(9, OUTPUT);
+  digitalWrite(10, 0);
+  digitalWrite(9, 0);		
 
   /* U8g2 Project: T6963 Test Board */
   //pinMode(18, OUTPUT);
