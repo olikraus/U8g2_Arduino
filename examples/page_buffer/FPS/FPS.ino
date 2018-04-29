@@ -228,8 +228,16 @@
   U8G2_ST75256_JLX256128_1_4W_SW_SPI		MKR Zero		Clip=2.0 Box=2.0  @=1.2 Pix=1.3
   U8G2_ST75256_JLX256128_1_4W_HW_SPI		MKR Zero		Clip=30.3 Box=31.0  @=2.6 Pix=2.9
 
-  23 Aor 2018, Arduino 1.8.4, 8 Bit Mode
+  23 Apr 2018, Arduino 1.8.4, 8 Bit Mode
   U8G2_SSD1306_128X64_NONAME_1_3W_SW_SPI 	Uno			Clip=2.7 Box=2.9  @=1.8 Pix=2.2
+
+  29 Apr 2018, Arduino 1.8.4, 8 Bit Mode
+  U8G2_SSD1306_128X64_NONAME_1_SW_I2C		Uno			Clip=1.8 Box=1.9  @=1.4 Pix=1.6		issue 593, before optimization
+  U8G2_SSD1306_128X64_NONAME_1_SW_I2C		Uno			Clip=4.9 Box=5.3  @=2.6 Pix=3.6		issue 593, after optimization, however, disabled by default
+  
+  U8G2_SSD1306_128X64_NONAME_1_3W_SW_SPI 	Uno			Clip=2.7 Box=2.9  @=1.8 Pix=2.2		issue 586, before optimization
+  U8G2_SSD1306_128X64_NONAME_1_3W_SW_SPI 	Uno			Clip=23.4 Box=40.8  @=4.4 Pix=8.1	issue 586, after optimization
+
 */
 
 
