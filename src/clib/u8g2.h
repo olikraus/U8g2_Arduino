@@ -344,10 +344,12 @@ struct u8g2_struct
 #ifdef U8G2_WITH_HVLINE_COUNT
   unsigned long hv_cnt;
 #endif /* U8G2_WITH_HVLINE_COUNT */   
-#ifdef __unix__
-  uint16_t last_unicode;
-  const uint8_t *last_font_data;
-#endif
+
+// removed, there is now the new index table
+//#ifdef __unix__
+//  uint16_t last_unicode;
+//  const uint8_t *last_font_data;
+//#endif
 
 };
 
@@ -1821,6 +1823,8 @@ extern const uint8_t u8g2_font_unifont_t_japanese2[] U8G2_FONT_SECTION("u8g2_fon
 extern const uint8_t u8g2_font_unifont_t_japanese3[] U8G2_FONT_SECTION("u8g2_font_unifont_t_japanese3");
 extern const uint8_t u8g2_font_unifont_t_korean1[] U8G2_FONT_SECTION("u8g2_font_unifont_t_korean1");
 extern const uint8_t u8g2_font_unifont_t_korean2[] U8G2_FONT_SECTION("u8g2_font_unifont_t_korean2");
+extern const uint8_t u8g2_font_unifont_t_vietnamese1[] U8G2_FONT_SECTION("u8g2_font_unifont_t_vietnamese1");
+extern const uint8_t u8g2_font_unifont_t_vietnamese2[] U8G2_FONT_SECTION("u8g2_font_unifont_t_vietnamese2");
 extern const uint8_t u8g2_font_gb16st_t_1[] U8G2_FONT_SECTION("u8g2_font_gb16st_t_1");
 extern const uint8_t u8g2_font_gb16st_t_2[] U8G2_FONT_SECTION("u8g2_font_gb16st_t_2");
 extern const uint8_t u8g2_font_gb16st_t_3[] U8G2_FONT_SECTION("u8g2_font_gb16st_t_3");
