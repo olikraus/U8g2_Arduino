@@ -238,6 +238,17 @@
   U8G2_SSD1306_128X64_NONAME_1_3W_SW_SPI 	Uno			Clip=2.7 Box=2.9  @=1.8 Pix=2.2		issue 586, before optimization
   U8G2_SSD1306_128X64_NONAME_1_3W_SW_SPI 	Uno			Clip=23.4 Box=40.8  @=4.4 Pix=8.1	issue 586, after optimization
 
+
+  28 Oct 2018, Arduino 1.8.4, 8 Bit Mode
+  U8G2_SSD1306_128X64_NONAME_1_4W_HW_SPI	Uno			Clip=34.0 Box=88.4  @=4.5 Pix=8.2	issue 364, clip window 
+  
+  U8G2_SSD1306_128X32_UNIVISION_1_HW_I2C 	Uno			Clip=28.4 Box=39.2  @=10.0 Pix=14.9	I2C default
+  U8G2_SSD1306_128X32_UNIVISION_1_HW_I2C 	Uno			Clip=32.9 Box=48.3  @=10.5 Pix=16.1	I2C default, u8g2.setBusClock(600000UL)
+  
+  U8G2_SSD1306_128X64_NONAME_1_4W_HW_SPI	Uno			Clip=33.9 Box=88.2  @=4.5 Pix=8.2	SPI default speed			
+  U8G2_SSD1306_128X64_NONAME_1_4W_HW_SPI	Uno			Clip=32.8 Box=80.6  @=4.5 Pix=8.2	SPI default speed	u8g2.setBusClock(6000000UL);
+  U8G2_SSD1306_128X64_NONAME_1_4W_HW_SPI	Uno			Clip=33.9 Box=88.2  @=4.5 Pix=8.2	SPI default speed	u8g2.setBusClock(9000000UL);
+
 */
 
 

@@ -72,27 +72,14 @@
 //#define U8G2_16BIT
 
 
-/*
-  The following macro enables a special check and optimization
-  in the HVLine procedure for lines with one pixel length.
-  It enabled, it will consume about 60 bytes in flash memory of the AVR and
-  there will be a speed improvement of about 20% for any single pixel draw.
-*/
-#define U8G2_WITH_ONE_PIXEL_OPTIMIZATION
-
+/* U8g2 feature selection, see also https://github.com/olikraus/u8g2/wiki/u8g2optimization */
 
 /*
   The following macro enables the HVLine speed optimization.
   It will consume about 40 bytes more in flash memory of the AVR.
   HVLine procedures are also used by the text drawing functions.
 */
-#define U8G2_HVLINE_SPEED_OPTIMIZATION
-
-/*
-  The following macro enables all four drawing directions for glyphs and strings.
-  If this macro is not defined, than a string can be drawn only in horizontal direction.
-*/
-#define U8G2_WITH_FONT_ROTATION
+#define U8G2_WITH_HVLINE_SPEED_OPTIMIZATION
 
 /*
   The following macro activates the early intersection check with the current visible area.
@@ -102,6 +89,22 @@
   macro can be commented to reduce code size.
 */
 #define U8G2_WITH_INTERSECTION
+
+
+/*
+  Enable clip window support:
+    void u8g2_SetMaxClipWindow(u8g2_t *u8g2)
+    void u8g2_SetClipWindow(u8g2_t *u8g2, u8g2_uint_t clip_x0, u8g2_uint_t clip_y0, u8g2_uint_t clip_x1, u8g2_uint_t clip_y1 )
+  Setting a clip window will restrict all drawing to this window.
+  Clip window support requires about 200 bytes flash memory on AVR systems
+*/
+#define U8G2_WITH_CLIP_WINDOW_SUPPORT
+
+/*
+  The following macro enables all four drawing directions for glyphs and strings.
+  If this macro is not defined, than a string can be drawn only in horizontal direction.
+*/
+#define U8G2_WITH_FONT_ROTATION
 
 /*
   U8glib V2 contains support for unicode plane 0 (Basic Multilingual Plane, BMP).
@@ -128,24 +131,6 @@
       - Only character values 0 to 255 are supported in the font file.
 */
 #define U8G2_WITH_UNICODE
-
-
-/*
-  Internal performance test for the effect of enabling U8G2_WITH_INTERSECTION
-  Should not be defined for production code
-*/
-//#define U8G2_WITH_HVLINE_COUNT
-
-/*
-  Defining the following variable adds the clipping and check procedures agains the display boundaries.
-  Clipping procedures are mandatory for the picture loop (u8g2_FirstPage/NextPage).
-  Clipping procedures will also allow strings to exceed the display boundaries.
-  On the other side, without clipping, all the setting of pixels must happen within the display boundaries.
-  
-  WARNING: Adding a comment in front of the following macro or removing the following line
-  may lead to memory faults if you write any pixel outside the display boundary.
-*/
-#define U8G2_WITH_CLIPPING
 
 
 
@@ -194,6 +179,7 @@ typedef struct u8g2_struct u8g2_t;
 typedef struct u8g2_cb_struct u8g2_cb_t;
 
 typedef void (*u8g2_update_dimension_cb)(u8g2_t *u8g2);
+typedef void (*u8g2_update_page_win_cb)(u8g2_t *u8g2);
 typedef void (*u8g2_draw_l90_cb)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir);
 typedef void (*u8g2_draw_ll_hvline_cb)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir);
 
@@ -276,7 +262,8 @@ typedef struct _u8g2_kerning_t u8g2_kerning_t;
 
 struct u8g2_cb_struct
 {
-  u8g2_update_dimension_cb update;
+  u8g2_update_dimension_cb update_dimension;
+  u8g2_update_page_win_cb update_page_win;
   u8g2_draw_l90_cb draw_l90;
 };
 
@@ -300,23 +287,32 @@ struct u8g2_struct
   u8g2_uint_t pixel_curr_row;		/* u8g2.tile_curr_row*8 */
   
   /* the following variables are set by the update dimension callback */
-  /* this is clipbox after rotation for the hvline procedures */
+  /* this is the clipbox after rotation for the hvline procedures */
   //u8g2_uint_t buf_x0;	/* left corner of the buffer */
   //u8g2_uint_t buf_x1;	/* right corner of the buffer (excluded) */
   u8g2_uint_t buf_y0;
   u8g2_uint_t buf_y1;
   
-  /* display dimensions in pixel for the user, calculated in u8g2_update_dimension_common(), used in u8g2_draw_hv_line_2dir() */
+  /* display dimensions in pixel for the user, calculated in u8g2_update_dimension_common()  */
   u8g2_uint_t width;
   u8g2_uint_t height;
   
   /* ths is the clip box for the user to check if a specific box has an intersection */
   /* use u8g2_IsIntersection from u8g2_intersection.c to test against this intersection */
-  /* boundary values are part of the box so that they can be used with u8g2_IsIntersection */
+  /* actually, this window describes the positon of the current page */
   u8g2_uint_t user_x0;	/* left corner of the buffer */
   u8g2_uint_t user_x1;	/* right corner of the buffer (excluded) */
   u8g2_uint_t user_y0;	/* upper edge of the buffer */
   u8g2_uint_t user_y1;	/* lower edge of the buffer (excluded) */
+  
+#ifdef U8G2_WITH_CLIP_WINDOW_SUPPORT
+  /* clip window */
+  u8g2_uint_t clip_x0;	/* left corner of the clip window */
+  u8g2_uint_t clip_x1;	/* right corner of the clip window (excluded) */
+  u8g2_uint_t clip_y0;	/* upper edge of the clip window */
+  u8g2_uint_t clip_y1;	/* lower edge of the clip window (excluded) */
+#endif /* U8G2_WITH_CLIP_WINDOW_SUPPORT */
+  
   
   /* information about the current font */
   const uint8_t *font;             /* current font for all text procedures */
@@ -326,6 +322,11 @@ struct u8g2_struct
   u8g2_font_calc_vref_fnptr font_calc_vref;
   u8g2_font_decode_t font_decode;		/* new font decode structure */
   u8g2_font_info_t font_info;			/* new font info structure */
+
+#ifdef U8G2_WITH_CLIP_WINDOW_SUPPORT
+  /* 1 of there is an intersection between user_?? and clip_?? box */
+  uint8_t is_page_clip_window_intersection;
+#endif /* U8G2_WITH_CLIP_WINDOW_SUPPORT */
 
   uint8_t font_height_mode;
   int8_t font_ref_ascent;
@@ -341,16 +342,6 @@ struct u8g2_struct
 	// the following variable should be renamed to is_buffer_auto_clear
   uint8_t is_auto_page_clear; 		/* set to 0 to disable automatic clear of the buffer in firstPage() and nextPage() */
   
-#ifdef U8G2_WITH_HVLINE_COUNT
-  unsigned long hv_cnt;
-#endif /* U8G2_WITH_HVLINE_COUNT */   
-
-// removed, there is now the new index table
-//#ifdef __unix__
-//  uint16_t last_unicode;
-//  const uint8_t *last_font_data;
-//#endif
-
 };
 
 #define u8g2_GetU8x8(u8g2) ((u8x8_t *)(u8g2))
@@ -418,6 +409,9 @@ extern const u8g2_cb_t u8g2_cb_mirror;
   u8g2_cb			U8G2_R0 .. U8G2_R3
       
 */
+
+void u8g2_SetMaxClipWindow(u8g2_t *u8g2);
+void u8g2_SetClipWindow(u8g2_t *u8g2, u8g2_uint_t clip_x0, u8g2_uint_t clip_y0, u8g2_uint_t clip_x1, u8g2_uint_t clip_y1 );
 
 void u8g2_SetupBuffer(u8g2_t *u8g2, uint8_t *buf, uint8_t tile_buf_height, u8g2_draw_ll_hvline_cb ll_hvline_cb, const u8g2_cb_t *u8g2_cb);
 void u8g2_SetDisplayRotation(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);

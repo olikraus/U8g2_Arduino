@@ -1,6 +1,6 @@
 /*
 
-  HelloWorld.ino
+  ClipWindow.ino
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -31,24 +31,6 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
   
-  27 Oct 2018:
-  
-  U8G2_SSD1306_128X64_NONAME_1_4W_HW_SPI u8g2
-  make -f Makefile.184.uno
-  
-   text	   
-   8732	    					default, all active
-   8500	    -232	    -2.65%		no U8G2_WITH_CLIP_WINDOW_SUPPORT
-   8316	    -416	    -4.76%		no U8G2_WITH_FONT_ROTATION
-   8606	    -126	    -1.44%	 	no U8G2_WITH_UNICODE
-   8692	    -40	    -0.45%		no U8G2_WITH_INTERSECTION
-   8328	    -404	    -4.62%	  	no U8G2_WITH_INTERSECTION  no U8G2_WITH_CLIP_WINDOW_SUPPORT
-   8718	    -14	    -4.86%		no U8G2_WITH_HVLINE_SPEED_OPTIMIZATION
-   8026	    -706	    -8.08%		no U8G2_WITH_FONT_ROTATION   no U8G2_WITH_INTERSECTION  no U8G2_WITH_CLIP_WINDOW_SUPPORT
-   
-   Some flags depend on each other: `U8G2_WITH_INTERSECTION` is required for `U8G2_WITH_CLIP_WINDOW_SUPPORT`, so `U8G2_WITH_INTERSECTION` is partly active as long
-   as `U8G2_WITH_CLIP_WINDOW_SUPPORT` is requested.
-   
 */
 
 #include <Arduino.h>
@@ -274,12 +256,27 @@ void setup(void) {
   u8g2.begin();  
 }
 
+u8g2_uint_t x = 0;
+
 void loop(void) {
+  if ( x == 0 )
+    x = 40;
+  else
+    x--;
+    
+  u8g2.setFont(u8g2_font_ncenB10_tr);
   u8g2.firstPage();
   do {
-    u8g2.setFont(u8g2_font_ncenB10_tr);
-    u8g2.drawStr(0,24,"Hello World!");
+  
+    /* assign a clip window and draw some text into it */
+    u8g2.setClipWindow(35, 11, 74, 27);  /* upper left and lower right position */
+    u8g2.drawStr(x,23,"U8g2 U8g2");
+    
+    /* remove clip window, draw to complete screen */
+    u8g2.setMaxClipWindow(); 
+    u8g2.drawFrame(34, 10, 40, 18);
+    
   } while ( u8g2.nextPage() );
-  //delay(1000);
+  delay(10);
 }
 

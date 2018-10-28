@@ -63,6 +63,9 @@ class U8G2 : public Print
     u8x8_t *getU8x8(void) { return u8g2_GetU8x8(&u8g2); }
     u8g2_t *getU8g2(void) { return &u8g2; }
 
+    uint32_t getBusClock(void) { return u8g2_GetU8x8(&u8g2)->bus_clock; }
+    void setBusClock(uint32_t clock_speed) { u8g2_GetU8x8(&u8g2)->bus_clock = clock_speed; }
+
     void setI2CAddress(uint8_t adr) { u8g2_SetI2CAddress(&u8g2, adr); }
     
     
@@ -144,6 +147,12 @@ class U8G2 : public Print
 
     /* u8g2  */
 
+#ifdef U8G2_WITH_CLIP_WINDOW_SUPPORT
+    void setMaxClipWindow(void) { u8g2_SetMaxClipWindow(&u8g2); }
+    void setClipWindow(u8g2_uint_t clip_x0, u8g2_uint_t clip_y0, u8g2_uint_t clip_x1, u8g2_uint_t clip_y1) {
+      u8g2_SetClipWindow(&u8g2, clip_x0, clip_y0, clip_x1, clip_y1 ); }
+#endif /* U8G2_WITH_CLIP_WINDOW_SUPPORT */
+      
       
     u8g2_uint_t getDisplayHeight(void) { return u8g2_GetDisplayHeight(&u8g2); }
     u8g2_uint_t getDisplayWidth(void) { return u8g2_GetDisplayWidth(&u8g2); }
