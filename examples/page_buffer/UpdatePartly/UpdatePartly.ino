@@ -1,6 +1,11 @@
 /*
 
-  HelloWorld.ino
+  UpdatePartly.ino
+
+  This will scroll text on the display similar to ScrollingText.ino example,
+  Scrolling will be faster, because only the changing part of the display
+  gets updated.
+  Enable U8g2 16 bit mode (see FAQ) for larger text!
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -30,25 +35,7 @@
   STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
-  
-  27 Oct 2018:
-  
-  U8G2_SSD1306_128X64_NONAME_1_4W_HW_SPI u8g2
-  make -f Makefile.184.uno
-  
-   text	   
-   8732	    					default, all active
-   8500	    -232	    -2.65%		no U8G2_WITH_CLIP_WINDOW_SUPPORT
-   8316	    -416	    -4.76%		no U8G2_WITH_FONT_ROTATION
-   8606	    -126	    -1.44%	 	no U8G2_WITH_UNICODE
-   8692	    -40	    -0.45%		no U8G2_WITH_INTERSECTION
-   8328	    -404	    -4.62%	  	no U8G2_WITH_INTERSECTION  no U8G2_WITH_CLIP_WINDOW_SUPPORT
-   8718	    -14	    -4.86%		no U8G2_WITH_HVLINE_SPEED_OPTIMIZATION
-   8026	    -706	    -8.08%		no U8G2_WITH_FONT_ROTATION   no U8G2_WITH_INTERSECTION  no U8G2_WITH_CLIP_WINDOW_SUPPORT
-   
-   Some flags depend on each other: `U8G2_WITH_INTERSECTION` is required for `U8G2_WITH_CLIP_WINDOW_SUPPORT`, so `U8G2_WITH_INTERSECTION` is partly active as long
-   as `U8G2_WITH_CLIP_WINDOW_SUPPORT` is requested.
-   
+
 */
 
 #include <Arduino.h>
@@ -63,12 +50,13 @@
 
 
 /*
-  U8g2lib Example Overview:
+  U82glib Example Overview:
     Frame Buffer Examples: clearBuffer/sendBuffer. Fast, but may not work with all Arduino boards because of RAM consumption
     Page Buffer Examples: firstPage/nextPage. Less RAM usage, should work with all Arduino boards.
     U8x8 Text Only Example: No RAM usage, direct communication with display controller. No graphics, 8x8 Text only.
     
-  This is a page buffer example.    
+  This is a page buffer example.
+  
 */
 
 // Please UNCOMMENT one of the contructor lines below
@@ -250,6 +238,16 @@
 // End of constructor list
 
 
+// This example shows a scrolling text.
+// If U8G2_16BIT is not set (default), then the pixel width of the text must be lesser than 128
+// If U8G2_16BIT is set, then the pixel width an be up to 32000 
+
+
+u8g2_uint_t offset;			// current offset for the scrolling text
+u8g2_uint_t width;			// pixel width of the scrolling text (must be lesser than 128 unless U8G2_16BIT is defined
+const char *text = "U8g2 ";	// scroll this text from right to left
+
+
 void setup(void) {
 
   /* U8g2 Project: SSD1306 Test Board */
@@ -266,23 +264,55 @@ void setup(void) {
   //pinMode(16, OUTPUT);
   //digitalWrite(16, 0);	
 
-  /* U8g2 Project: LC7981 Test Board, connect RW to GND */
-  //pinMode(17, OUTPUT);
-  //digitalWrite(17, 0);	
-
-  /* U8g2 Project: Pax Instruments Shield: Enable Backlight */
-  //pinMode(6, OUTPUT);
-  //digitalWrite(6, 0);	
-
   u8g2.begin();  
-}
-
-void loop(void) {
+  
+  u8g2.setFont(u8g2_font_helvB18_tr);	// set the target font to calculate the pixel width
+  
+  width = u8g2.getUTF8Width(text);		// calculate the pixel width of the text
+  
+  u8g2.setFontMode(0);		// enable transparent mode, which is faster
+  
+  // draw the constant part of the screen
+  // this will not be overwritten later
   u8g2.firstPage();
   do {
-    u8g2.setFont(u8g2_font_ncenB10_tr);
-    u8g2.drawStr(0,24,"Hello World!");
+      u8g2.drawUTF8(18, 20, "[ U8g2 ]"); 		// This part will stay constantly on the screen
   } while ( u8g2.nextPage() );
-  //delay(1000);
+  
+}
+
+void drawText(void) {
+  u8g2_uint_t x = offset;
+  do {								// repeated drawing of the scrolling text...
+    u8g2.drawUTF8(x, 19, text);			// draw the scolling text
+    x += width;						// add the pixel width of the scrolling text
+  } while( x < u8g2.getDisplayWidth() );		// draw again until the complete display is filled
+}
+
+
+void loop(void) {
+  int i;
+
+  // write the scrolling text to the lower part of the display
+  for( i = 0; i < 3; i++ )
+  {
+    // draw to lines 0...23 (3*8-1)
+    // draw to the upper part of the screen
+    u8g2.setBufferCurrTileRow(i);
+    u8g2.clearBuffer();
+    drawText();
+    
+    // but write the buffer to the lower part (offset 4*8 = 32)
+    u8g2.setBufferCurrTileRow(4+i);
+    u8g2.sendBuffer();
+  }
+  
+  
+  // calculate the new offset for the scrolling  
+  offset-=1;							// scroll by one pixel
+  if ( (u8g2_uint_t)offset < (u8g2_uint_t)-width )	
+    offset = 0;							// start over again
+    
+  delay(10);							// do some small delay
 }
 
