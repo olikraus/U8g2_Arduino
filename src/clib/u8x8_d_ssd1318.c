@@ -1,10 +1,10 @@
 /*
 
-  u8x8_d_ssd1317.c
+  u8x8_d_ssd1318.c
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
-  Copyright (c) 2018, olikraus@gmail.com
+  Copyright (c) 2019, olikraus@gmail.com
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without modification, 
@@ -32,9 +32,9 @@
   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
 
 
-  SSD1317: 128x96 OLED
+  SSD1318: 128x96 OLED
   
-  https://github.com/olikraus/u8g2/issues/663
+  https://github.com/olikraus/u8g2/issues/784
 
 */
 
@@ -44,19 +44,28 @@
 
 
 /* more or less generic setup of all these small OLEDs */
-static const uint8_t u8x8_d_ssd1317_96x96_init_seq[] = {
+static const uint8_t u8x8_d_ssd1318_128x96_init_seq[] = {
     
   U8X8_START_TRANSFER(),             	/* enable chip, delay is part of the transfer start */
   
   
+  U8X8_CA(0x0fd, 0x012),		/* unlock */
   U8X8_C(0x0ae),		                /* display off */
-  U8X8_CA(0x0d5, 0x080),		/* clock divide ratio (0x00=1) and oscillator frequency (0x8) */
-  U8X8_CA(0x0a8, 0x03f),		/* multiplex ratio */
+  U8X8_CA(0x0ad, 0x0d0),		/* external or internal IREF selection */
+  U8X8_CA(0x0a8, 0x05f),		/* multiplex ratio, 96 duty */
   U8X8_CA(0x0d3, 0x000),		/* display offset */
-  U8X8_C(0x040),		                /* set display start line to 0 */
-  U8X8_CA(0x08d, 0x014),		/* [2] charge pump setting (p62): 0x014 enable, 0x010 disable, SSD1306 only, should be removed for SH1106 */
-  U8X8_CA(0x020, 0x000),		/* page addressing mode */
+  U8X8_CA(0x0a2, 0x000),		/* start line */
   
+  
+  // four possible charge pump setting from as per sec 6.8.2 of the ssd1318 datasheet
+  // uncomment only one of the below for lines  
+  // U8X8_CA(0x08d, 0x004),		/* Charge pump setting from sec 6.8.2 of SSD1318 datasheet */
+  // U8X8_CA(0x08d, 0x044),		/* Charge pump setting from sec 6.8.2 of SSD1318 datasheet */
+  // U8X8_CA(0x08d, 0x084),		/* Charge pump setting from sec 6.8.2 of SSD1318 datasheet */
+  // U8X8_CA(0x08d, 0x0c4),		/* Charge pump setting from sec 6.8.2 of SSD1318 datasheet */
+  
+  U8X8_CA(0x0ac, 0x001),		/* Charge pump setting from sec 6.8.2 of SSD1318 datasheet */
+
   U8X8_C(0x0a1),				/* segment remap a0/a1*/
   U8X8_C(0x0c8),				/* c0: scan dir normal, c8: reverse */
   // Flipmode
@@ -65,13 +74,17 @@ static const uint8_t u8x8_d_ssd1317_96x96_init_seq[] = {
   
   U8X8_CA(0x0da, 0x012),		/* com pin HW config, sequential com pin config (bit 4), disable left/right remap (bit 5) */
 
-  U8X8_CA(0x081, 0x0cf), 		/* [2] set contrast control */
-  U8X8_CA(0x0d9, 0x0f1), 		/* [2] pre-charge period 0x022/f1*/
-  U8X8_CA(0x0db, 0x040), 		/* vcomh deselect level */  
-  // if vcomh is 0, then this will give the biggest range for contrast control issue #98
-  // restored the old values for the noname constructor, because vcomh=0 will not work for all OLEDs, #116
+  U8X8_CA(0x081, 0x00f), 		/* value from issue 784, seems to be a little bit low... */
   
-  U8X8_C(0x02e),				/* Deactivate scroll */ 
+  
+  U8X8_CA(0x0d5, 0x0d1),		/* clock divide ratio (0x00=1) and oscillator frequency (0x8), value from issue 784 example code */
+  U8X8_CA(0x0d9, 0x022), 		/* [2] pre-charge period 0x022/f1, value from issue 784 example code */
+  U8X8_CA(0x0db, 0x030), 		/* vcomh deselect level, value from issue 784 example code  */  
+  
+  
+  //U8X8_CA(0x020, 0x000),		/* page addressing mode */
+  //U8X8_C(0x02e),				/* Deactivate scroll */ 
+  
   U8X8_C(0x0a4),				/* output ram to display */
   U8X8_C(0x0a6),				/* none inverted normal display mode */
     
@@ -81,21 +94,21 @@ static const uint8_t u8x8_d_ssd1317_96x96_init_seq[] = {
 
 
 
-static const uint8_t u8x8_d_ssd1317_96x96_powersave0_seq[] = {
+static const uint8_t u8x8_d_ssd1318_128x96_powersave0_seq[] = {
   U8X8_START_TRANSFER(),             	/* enable chip, delay is part of the transfer start */
   U8X8_C(0x0af),		                /* display on */
   U8X8_END_TRANSFER(),             	/* disable chip */
   U8X8_END()             			/* end of sequence */
 };
 
-static const uint8_t u8x8_d_ssd1317_96x96_powersave1_seq[] = {
+static const uint8_t u8x8_d_ssd1318_128x96_powersave1_seq[] = {
   U8X8_START_TRANSFER(),             	/* enable chip, delay is part of the transfer start */
   U8X8_C(0x0ae),		                /* display off */
   U8X8_END_TRANSFER(),             	/* disable chip */
   U8X8_END()             			/* end of sequence */
 };
 
-static const uint8_t u8x8_d_ssd1317_96x96_flip0_seq[] = {
+static const uint8_t u8x8_d_ssd1318_128x96_flip0_seq[] = {
   U8X8_START_TRANSFER(),             	/* enable chip, delay is part of the transfer start */
   U8X8_C(0x0a1),				/* segment remap a0/a1*/
   U8X8_C(0x0c0),				/* c0: scan dir normal, c8: reverse */
@@ -103,7 +116,7 @@ static const uint8_t u8x8_d_ssd1317_96x96_flip0_seq[] = {
   U8X8_END()             			/* end of sequence */
 };
 
-static const uint8_t u8x8_d_ssd1317_96x96_flip1_seq[] = {
+static const uint8_t u8x8_d_ssd1318_128x96_flip1_seq[] = {
   U8X8_START_TRANSFER(),             	/* enable chip, delay is part of the transfer start */
   U8X8_C(0x0a0),				/* segment remap a0/a1*/
   U8X8_C(0x0c8),				/* c0: scan dir normal, c8: reverse */
@@ -112,7 +125,7 @@ static const uint8_t u8x8_d_ssd1317_96x96_flip1_seq[] = {
 };
 
 
-static uint8_t u8x8_d_ssd1317_generic(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+static uint8_t u8x8_d_ssd1318_generic(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 {
   uint8_t x, c;
   uint8_t *ptr;
@@ -120,30 +133,30 @@ static uint8_t u8x8_d_ssd1317_generic(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int
   {
     /* handled by the calling function
     case U8X8_MSG_DISPLAY_SETUP_MEMORY:
-      u8x8_d_helper_display_setup_memory(u8x8, &u8x8_ssd1317_96x96_display_info);
+      u8x8_d_helper_display_setup_memory(u8x8, &u8x8_ssd1318_128x96_display_info);
       break;
     */
     /* handled by the calling function
     case U8X8_MSG_DISPLAY_INIT:
       u8x8_d_helper_display_init(u8x8);
-      u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1317_96x96_init_seq);    
+      u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1318_128x96_init_seq);    
       break;
     */
     case U8X8_MSG_DISPLAY_SET_POWER_SAVE:
       if ( arg_int == 0 )
-	u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1317_96x96_powersave0_seq);
+	u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1318_128x96_powersave0_seq);
       else
-	u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1317_96x96_powersave1_seq);
+	u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1318_128x96_powersave1_seq);
       break;
     case U8X8_MSG_DISPLAY_SET_FLIP_MODE:
       if ( arg_int == 0 )
       {
-	u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1317_96x96_flip0_seq);
+	u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1318_128x96_flip0_seq);
 	u8x8->x_offset = u8x8->display_info->default_x_offset;
       }
       else
       {
-	u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1317_96x96_flip1_seq);
+	u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1318_128x96_flip1_seq);
 	u8x8->x_offset = u8x8->display_info->flipmode_x_offset;
       }
       break;
@@ -151,7 +164,7 @@ static uint8_t u8x8_d_ssd1317_generic(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int
     case U8X8_MSG_DISPLAY_SET_CONTRAST:
       u8x8_cad_StartTransfer(u8x8);
       u8x8_cad_SendCmd(u8x8, 0x081 );
-      u8x8_cad_SendArg(u8x8, arg_int );	/* ssd1306 has range from 0 to 255 */
+      u8x8_cad_SendArg(u8x8, arg_int );	/* ssd1318 has range from 0 to 255 */
       u8x8_cad_EndTransfer(u8x8);
       break;
 #endif
@@ -193,7 +206,7 @@ static uint8_t u8x8_d_ssd1317_generic(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int
 }
 
 
-static const u8x8_display_info_t u8x8_ssd1317_96x96_display_info =
+static const u8x8_display_info_t u8x8_ssd1318_128x96_display_info =
 {
   /* chip_enable_level = */ 0,
   /* chip_disable_level = */ 1,
@@ -213,24 +226,24 @@ static const u8x8_display_info_t u8x8_ssd1317_96x96_display_info =
   /* tile_hight = */ 12,
   /* default_x_offset = */ 0,
   /* flipmode_x_offset = */ 0,
-  /* pixel_width = */ 96,
+  /* pixel_width = */ 128,
   /* pixel_height = */ 96
 };
 
-uint8_t u8x8_d_ssd1317_96x96(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+uint8_t u8x8_d_ssd1318_128x96(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 {
     
-  if ( u8x8_d_ssd1317_generic(u8x8, msg, arg_int, arg_ptr) != 0 )
+  if ( u8x8_d_ssd1318_generic(u8x8, msg, arg_int, arg_ptr) != 0 )
     return 1;
   
   switch(msg)
   {
     case U8X8_MSG_DISPLAY_INIT:
       u8x8_d_helper_display_init(u8x8);
-      u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1317_96x96_init_seq);    
+      u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1318_128x96_init_seq);    
       break;
     case U8X8_MSG_DISPLAY_SETUP_MEMORY:
-      u8x8_d_helper_display_setup_memory(u8x8, &u8x8_ssd1317_96x96_display_info);
+      u8x8_d_helper_display_setup_memory(u8x8, &u8x8_ssd1318_128x96_display_info);
       break;
     default:
       return 0;
