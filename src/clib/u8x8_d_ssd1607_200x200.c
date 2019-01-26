@@ -75,7 +75,7 @@ static const u8x8_display_info_t u8x8_ssd1607_200x200_display_info =
   /* sda_setup_time_ns = */ 50,		/* SSD1606: */
   /* sck_pulse_width_ns = */ 100,	/* SSD1606: 100ns */
   /* sck_clock_hz = */ 4000000UL,	/* since Arduino 1.6.0, the SPI bus speed in Hz. Should be  1000000000/sck_pulse_width_ns */
-  /* spi_mode = */ 2,		/* active high, rising edge */
+  /* spi_mode = */ 0,		/* active high, rising edge */
   /* i2c_bus_clock_100kHz = */ 4,
   /* data_setup_time_ns = */ 40,
   /* write_pulse_width_ns = */ 150,	
@@ -664,7 +664,7 @@ uint8_t u8x8_d_ssd1607_ws_200x200(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, vo
       break;
     case U8X8_MSG_DISPLAY_INIT:
       u8x8_d_helper_display_init(u8x8);
-      u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1607_200x200_init_seq);    
+      u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1607_ws_200x200_init_seq);    
       u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1607_200x200_powersave0_seq);
       u8x8_d_ssd1607_200x200_first_init(u8x8);
       break;
