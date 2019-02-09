@@ -1,6 +1,8 @@
 /*
 
-  U8g2Logo.ino
+  UpdateArea.ino
+  
+  Demonstration for the UpdateDisplayArea command
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -49,7 +51,6 @@
     Page Buffer Examples: firstPage/nextPage. Less RAM usage, should work with all Arduino boards.
     U8x8 Text Only Example: No RAM usage, direct communication with display controller. No graphics, 8x8 Text only.
     
-  This is a frame buffer example.    
 */
 
 // Please UNCOMMENT one of the contructor lines below
@@ -237,82 +238,57 @@
 
 // End of constructor list
 
-//#define MINI_LOGO
+int16_t offset;				// current offset for the scrolling text
+u8g2_uint_t width;			// pixel width of the scrolling text (must be lesser than 128 unless U8G2_16BIT is defined
+const char *text = "U8g2";	// scroll this text from right to left
+
+const uint8_t tile_area_x_pos = 2;	// Update area left position (in tiles)
+const uint8_t tile_area_y_pos = 3;	// Update area upper position (distance from top in tiles)
+const uint8_t tile_area_width = 12;
+const uint8_t tile_area_height = 3;	// this will allow cour18 chars to fit into the area
+
+const u8g2_uint_t pixel_area_x_pos = tile_area_x_pos*8;
+const u8g2_uint_t pixel_area_y_pos = tile_area_y_pos*8;
+const u8g2_uint_t pixel_area_width = tile_area_width*8;
+const u8g2_uint_t pixel_area_height = tile_area_height*8;
 
 void setup(void) {
-  pinMode(9, OUTPUT);
-  digitalWrite(9, 0);	// default output in I2C mode for the SSD1306 test shield: set the i2c adr to 0
-
   u8g2.begin();
-}
-
-void drawLogo(void)
-{
-    u8g2.setFontMode(1);	// Transparent
-#ifdef MINI_LOGO
-
-    u8g2.setFontDirection(0);
-    u8g2.setFont(u8g2_font_inb16_mf);
-    u8g2.drawStr(0, 22, "U");
     
-    u8g2.setFontDirection(1);
-    u8g2.setFont(u8g2_font_inb19_mn);
-    u8g2.drawStr(14,8,"8");
-    
-    u8g2.setFontDirection(0);
-    u8g2.setFont(u8g2_font_inb16_mf);
-    u8g2.drawStr(36,22,"g");
-    u8g2.drawStr(48,22,"\xb2");
-    
-    u8g2.drawHLine(2, 25, 34);
-    u8g2.drawHLine(3, 26, 34);
-    u8g2.drawVLine(32, 22, 12);
-    u8g2.drawVLine(33, 23, 12);
-#else
-
-    u8g2.setFontDirection(0);
-    u8g2.setFont(u8g2_font_inb24_mf);
-    u8g2.drawStr(0, 30, "U");
-    
-    u8g2.setFontDirection(1);
-    u8g2.setFont(u8g2_font_inb30_mn);
-    u8g2.drawStr(21,8,"8");
-        
-    u8g2.setFontDirection(0);
-    u8g2.setFont(u8g2_font_inb24_mf);
-    u8g2.drawStr(51,30,"g");
-    u8g2.drawStr(67,30,"\xb2");
-    
-    u8g2.drawHLine(2, 35, 47);
-    u8g2.drawHLine(3, 36, 47);
-    u8g2.drawVLine(45, 32, 12);
-    u8g2.drawVLine(46, 33, 12);
-    
-#endif
-}
-
-void drawURL(void)
-{
-#ifndef MINI_LOGO
-  u8g2.setFont(u8g2_font_4x6_tr);
-  if ( u8g2.getDisplayHeight() < 59 )
-  {
-    u8g2.drawStr(89,20,"github.com");
-    u8g2.drawStr(73,29,"/olikraus/u8g2");
-  }
-  else
-  {
-    u8g2.drawStr(1,54,"github.com/olikraus/u8g2");
-  }
-#endif
+  u8g2.clearBuffer();					// clear the internal memory
+  u8g2.setFont(u8g2_font_helvR10_tr);	// choose a suitable font
+  u8g2.drawStr(0,12,"UpdateDisplayArea");	// write something to the internal memory
+  
+  // draw a frame, only the content within the frame will be updated
+  // the frame is never drawn again, bit will stay on the display
+  u8g2.drawBox(pixel_area_x_pos-1, pixel_area_y_pos-1, pixel_area_width+2, pixel_area_height+2);
+  
+  u8g2.sendBuffer();					// transfer internal memory to the display
+  
+  u8g2.setFont(u8g2_font_courB18_tr);	// set the target font for the text width calculation
+  width = u8g2.getUTF8Width(text);		// calculate the pixel width of the text
+  offset = width+pixel_area_width;
+  
+  
 }
 
 void loop(void) {
-  u8g2.clearBuffer();
-  drawLogo();
-  drawURL();
-  u8g2.sendBuffer();
-  delay(1000);
-}
+  u8g2.clearBuffer();						// clear the complete internal memory
 
+  // draw the scrolling text at current offset
+  u8g2.setFont(u8g2_font_courB18_tr);		// set the target font
+  u8g2.drawUTF8(
+    pixel_area_x_pos-width+offset, 
+    pixel_area_y_pos+pixel_area_height+u8g2.getDescent()-1, 
+    text);								// draw the scolling text
+  
+  // now only update the selected area, the rest of the display content is not changed
+  u8g2.updateDisplayArea(tile_area_x_pos, tile_area_y_pos, tile_area_width, tile_area_height);
+      
+  offset--;								// scroll by one pixel
+  if ( offset == 0 )	
+    offset = width+pixel_area_width;			// start over again
+    
+  delay(10);							// do some small delay
+}
 

@@ -69,6 +69,7 @@
 //U8X8_SH1107_64X128_4W_HW_SPI u8x8(/* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8X8_SH1107_128X128_4W_HW_SPI u8x8(/* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8X8_SH1107_128X128_HW_I2C u8x8(/* reset=*/ 8);
+//U8X8_SH1107_PIMORONI_128X128_HW_I2C u8x8(/* reset=*/ 8);
 //U8X8_SH1107_SEEED_96X96_4W_HW_SPI u8x8(/* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8X8_SH1108_160X160_4W_HW_SPI u8x8(/* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8X8_SSD1306_128X32_UNIVISION_SW_I2C u8x8(/* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);   // Adafruit Feather ESP8266/32u4 Boards + FeatherWing OLED
@@ -322,10 +323,16 @@ void loop(void)
   pre();
   u8x8.drawString(0, 1, "3x6 Font");
   u8x8.setFont(u8x8_font_inb33_3x6_n);
-  for(i = 0; i < 200; i++ )
+  for(i = 0; i < 100; i++ )
   {
-    u8x8.drawString(0, 2, u8x8_u16toa(i, 5));
+    u8x8.setCursor(0, 2);
+    u8x8.print(i);			// Arduino Print function
     delay(10);
+  }
+  for(i = 0; i < 100; i++ )
+  {
+    u8x8.drawString(0, 2, u8x8_u16toa(i, 5));	// U8g2 Build-In functions
+    delay(10);		
   }
 
   pre();
