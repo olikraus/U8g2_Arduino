@@ -889,6 +889,7 @@ void u8g2_Setup_st7511_avd_320x240_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8
 void u8g2_Setup_st7511_avd_320x240_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7511_avd_320x240_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_ea_dogm128_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7565_lm6063_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_64128n_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_zolen_128x64_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_lm6059_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
@@ -898,6 +899,7 @@ void u8g2_Setup_st7565_erc12864_alt_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u
 void u8g2_Setup_st7565_nhd_c12864_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_jlx12864_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_ea_dogm128_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7565_lm6063_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_64128n_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_zolen_128x64_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_lm6059_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
@@ -907,6 +909,7 @@ void u8g2_Setup_st7565_erc12864_alt_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u
 void u8g2_Setup_st7565_nhd_c12864_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_jlx12864_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_ea_dogm128_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7565_lm6063_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_64128n_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_zolen_128x64_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7565_lm6059_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
@@ -1989,6 +1992,17 @@ extern const uint8_t u8g2_font_ImpactBits_tr[] U8G2_FONT_SECTION("u8g2_font_Impa
 extern const uint8_t u8g2_font_IPAandRUSLCD_tf[] U8G2_FONT_SECTION("u8g2_font_IPAandRUSLCD_tf");
 extern const uint8_t u8g2_font_IPAandRUSLCD_tr[] U8G2_FONT_SECTION("u8g2_font_IPAandRUSLCD_tr");
 extern const uint8_t u8g2_font_IPAandRUSLCD_te[] U8G2_FONT_SECTION("u8g2_font_IPAandRUSLCD_te");
+extern const uint8_t u8g2_font_HelvetiPixel_tr[] U8G2_FONT_SECTION("u8g2_font_HelvetiPixel_tr");
+extern const uint8_t u8g2_font_TimesNewPixel_tr[] U8G2_FONT_SECTION("u8g2_font_TimesNewPixel_tr");
+extern const uint8_t u8g2_font_BitTypeWriter_tr[] U8G2_FONT_SECTION("u8g2_font_BitTypeWriter_tr");
+extern const uint8_t u8g2_font_BitTypeWriter_te[] U8G2_FONT_SECTION("u8g2_font_BitTypeWriter_te");
+extern const uint8_t u8g2_font_Georgia7px_tf[] U8G2_FONT_SECTION("u8g2_font_Georgia7px_tf");
+extern const uint8_t u8g2_font_Georgia7px_tr[] U8G2_FONT_SECTION("u8g2_font_Georgia7px_tr");
+extern const uint8_t u8g2_font_Georgia7px_te[] U8G2_FONT_SECTION("u8g2_font_Georgia7px_te");
+extern const uint8_t u8g2_font_Wizzard_tr[] U8G2_FONT_SECTION("u8g2_font_Wizzard_tr");
+extern const uint8_t u8g2_font_HelvetiPixelOutline_tr[] U8G2_FONT_SECTION("u8g2_font_HelvetiPixelOutline_tr");
+extern const uint8_t u8g2_font_HelvetiPixelOutline_te[] U8G2_FONT_SECTION("u8g2_font_HelvetiPixelOutline_te");
+extern const uint8_t u8g2_font_Untitled16PixelSansSerifBitmap_tr[] U8G2_FONT_SECTION("u8g2_font_Untitled16PixelSansSerifBitmap_tr");
 extern const uint8_t u8g2_font_etl14thai_t[] U8G2_FONT_SECTION("u8g2_font_etl14thai_t");
 extern const uint8_t u8g2_font_etl16thai_t[] U8G2_FONT_SECTION("u8g2_font_etl16thai_t");
 extern const uint8_t u8g2_font_etl24thai_t[] U8G2_FONT_SECTION("u8g2_font_etl24thai_t");
