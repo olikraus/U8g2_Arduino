@@ -61,6 +61,14 @@
 
 /* Undefine U8X8_HAVE_HW_SPI for those Boards without SPI.h */
 
+#ifdef KENDRYTE_K210
+
+#ifdef U8X8_HAVE_HW_SPI
+#undef U8X8_HAVE_HW_SPI
+#endif 
+
+#endif
+
 #ifdef ARDUINO_AVR_DIGISPARK
 
 #ifdef U8X8_HAVE_HW_SPI
