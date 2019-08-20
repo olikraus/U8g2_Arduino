@@ -256,6 +256,9 @@
   22 Apr 2019, Arduino 1.8.4
   U8G2_SH1107_SEEED_128X128_1_HW_I2C		Uno			Clip=4.9 Box=5.4  @=1.2 Pix=2.0		This is much faster than the older U8G2_SSD1327_SEEED_96X96_1_HW_I2C
 
+  21 Aug 2019, Arduino 1.8.9
+  U8G2_ST7565_PE12864_004_1_4W_HW_SPI		Pro-Mini 3v3 8MHz	Clip=17.3 Box=45.1 @=2.3 Pix=4.2
+  U8G2_ST7565_PE12864_004_1_4W_SW_WPI		Pro-Mini 3v3 8MHz	Clip=13.5 Box=24.0 @=2.2 Pix=3.8
 
 */
 
@@ -392,6 +395,8 @@
 //U8G2_ST7565_NHD_C12864_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_ST7565_JLX12864_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_ST7565_JLX12864_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_PE12864_004_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+//U8G2_ST7565_PE12864_004_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_ST7567_PI_132X64_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 7, /* dc=*/ 9, /* reset=*/ 8);  // Pax Instruments Shield, LCD_BL=6
 //U8G2_ST7567_PI_132X64_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 7, /* dc=*/ 9, /* reset=*/ 8);  // Pax Instruments Shield, LCD_BL=6
 //U8G2_ST7567_JLX12864_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 7, /* dc=*/ 9, /* reset=*/ 8);  
