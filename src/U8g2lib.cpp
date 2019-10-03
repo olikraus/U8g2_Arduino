@@ -1,6 +1,9 @@
 /*
 
-  u8x8_u16toa.c
+  U8g2lib.cpp
+  
+  Arduino specific functions
+
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -31,47 +34,43 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
 
-  
 */
 
 
-#include "u8x8.h"
+#include "U8g2lib.h"
 
-const char *u8x8_u16toap(char * dest, uint16_t v)
-{
-  uint8_t pos;
-  uint8_t d;
-  uint16_t c;
-  c = 10000;
-  for( pos = 0; pos < 5; pos++ )
-  {
-      d = '0';
-      while( v >= c )
-      {
-	v -= c;
-	d++;
-      }
-      dest[pos] = d;
-      c /= 10;
-  }  
-  dest[5] = '\0';
-  return dest;
+static Print *u8g2_print_for_screenshot;
+
+
+void u8g2_print_callback(const char *s)
+{ 
+  yield(); 
+  u8g2_print_for_screenshot->print(s); 
 }
 
-/* v = value, d = number of digits */
-const char *u8x8_u16toa(uint16_t v, uint8_t d)
+void U8G2::writeBufferPBM(Print &p)
 {
-  static char buf[6];
-  d = 5-d;
-  return u8x8_u16toap(buf, v) + d;
+  u8g2_print_for_screenshot = &p;
+  u8g2_WriteBufferXBM(getU8g2(), u8g2_print_callback);
 }
 
-const char *u8x8_utoa(uint16_t v)
+void U8G2::writeBufferXBM(Print &p)
 {
-  const char *s = u8x8_u16toa(v, 5);
-  while( *s == '0' )
-    s++;
-  if ( *s == '\0' )
-    s--;
-  return s;
+  u8g2_print_for_screenshot = &p;
+  u8g2_WriteBufferXBM(getU8g2(), u8g2_print_callback);
 }
+
+void U8G2::writeBufferPBM2(Print &p)
+{
+  u8g2_print_for_screenshot = &p;
+  u8g2_WriteBufferXBM(getU8g2(), u8g2_print_callback);
+}
+
+void U8G2::writeBufferXBM2(Print &p)
+{
+  u8g2_print_for_screenshot = &p;
+  u8g2_WriteBufferXBM(getU8g2(), u8g2_print_callback);
+}
+
+
+

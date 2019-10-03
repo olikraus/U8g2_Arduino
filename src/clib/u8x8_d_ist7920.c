@@ -56,16 +56,14 @@ static const uint8_t u8x8_d_ist7920_128x128_powersave1_seq[] = {
 
 static const uint8_t u8x8_d_ist7920_128x128_flip0_seq[] = {
   U8X8_START_TRANSFER(),             	/* enable chip, delay is part of the transfer start */
-  //U8X8_C(0x0a0),				/* segment remap a0/a1*/
-  //U8X8_C(0x0c8),				/* c0: scan dir normal, c8: reverse */
+  U8X8_C(0x064),				/* Display Ctrl: Bit3: SHL 2:ADC 1:EON, 0:REV */
   U8X8_END_TRANSFER(),             	/* disable chip */
   U8X8_END()             			/* end of sequence */
 };
 
 static const uint8_t u8x8_d_ist7920_128x128_flip1_seq[] = {
   U8X8_START_TRANSFER(),             	/* enable chip, delay is part of the transfer start */
-  //U8X8_C(0x0a1),				/* segment remap a0/a1*/
-  //U8X8_C(0x0c0),				/* c0: scan dir normal, c8: reverse */
+  U8X8_C(0x068),				/* Display Ctrl: Bit3: SHL 2:ADC 1:EON, 0:REV */
   U8X8_END_TRANSFER(),             	/* disable chip */
   U8X8_END()             			/* end of sequence */
 };
@@ -95,7 +93,7 @@ static const u8x8_display_info_t u8x8_ist7920_128x128_display_info =
   /* pixel_height = */ 128
 };
 
-/* 1/128 Duty, 1/10 Bias */
+/* 1/128 Duty, 1/10 Bias, 128x128 round display */
 static const uint8_t u8x8_d_ist7920_128x128_init_seq[] = {
     
   U8X8_START_TRANSFER(),             	/* enable chip, delay is part of the transfer start */
@@ -120,12 +118,14 @@ static const uint8_t u8x8_d_ist7920_128x128_init_seq[] = {
   U8X8_CA(0x033, 0x02f),		/* Power Control */
   U8X8_DLY(200),
   
-  U8X8_C(0x060),				/* Display Ctrl: Bit3: SHL 2:ADC 1:EON, 0:REV */
+  U8X8_C(0x064),				/* Display Ctrl: Bit3: SHL 2:ADC 1:EON, 0:REV */
 
   U8X8_CAA(0x074, 0x000, 0x00f),	/* AY Window */  
   U8X8_CAA(0x075, 0x000, 0x07f),	/* AX Window */  
+  
+  U8X8_CA(0x040, 64),			/* Start line at 64 */
 
-  U8X8_CA(0x0b1, 127),			/* electronic volume */  
+  U8X8_CA(0x0b1, 100),			/* electronic volume */  
 
 
   U8X8_END_TRANSFER(),             	/* disable chip */

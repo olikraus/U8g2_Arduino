@@ -1,10 +1,10 @@
 /*
 
-  SelectionList.ino
+  ScreenShot.ino
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
-  Copyright (c) 2016, olikraus@gmail.com
+  Copyright (c) 2018, olikraus@gmail.com
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without modification, 
@@ -151,7 +151,7 @@
 //U8G2_ST7920_128X64_F_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* CS=*/ 10, /* reset=*/ 8);
 //U8G2_ST7920_128X64_F_SW_SPI u8g2(U8G2_R0, /* clock=*/ 14, /* data=*/ 13, /* CS=*/ 15, /* reset=*/ 16); // Feather HUZZAH ESP8266, E=clock=14, RW=data=13, RS=CS
 //U8G2_ST7920_128X64_F_HW_SPI u8g2(U8G2_R0, /* CS=*/ 10, /* reset=*/ 8);
-//U8G2_ST7920_128X64_F_HW_SPI u8g2(U8G2_R0, /* CS=*/ 15, /* reset=*/ 16); // Feather HUZZAH ESP8266, E=clock=14, RW=data=13, RS=CS
+U8G2_ST7920_128X64_F_HW_SPI u8g2(U8G2_R0, /* CS=*/ 15, /* reset=*/ 16); // Feather HUZZAH ESP8266, E=clock=14, RW=data=13, RS=CS
 //U8G2_ST7565_EA_DOGM128_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_ST7565_EA_DOGM128_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_ST7565_64128N_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
@@ -259,60 +259,24 @@
 // End of constructor list
 
 
-
 void setup(void) {
-  
-  // DOGS102 Shield (http://shieldlist.org/controlconnection/dogs102)
-  // u8g2.begin(/* menu_select_pin= */ 5, /* menu_next_pin= */ 4, /* menu_prev_pin= */ 2, /* menu_home_pin= */ 3);
-  
-  // DOGM128 Shield (http://shieldlist.org/schmelle2/dogm128) + DOGXL160 Shield
-  // u8g2.begin(/* menu_select_pin= */ 2, /* menu_next_pin= */ 3, /* menu_prev_pin= */ 7, /* menu_home_pin= */ 8);
-
-  // MKR Zero Test Board
-  //u8g2.begin(/*Select=*/ 0, /*Right/Next=*/ 1, /*Left/Prev=*/ 2, /*Up=*/ 4, /*Down=*/ 3, /*Home/Cancel=*/ A6); 
-
-  // Arduboy
-  //u8g2.begin(/*Select=*/ A0, /*Right/Next=*/ 5, /*Left/Prev=*/ 9, /*Up=*/ 8, /*Down=*/ 10, /*Home/Cancel=*/ A1); // Arduboy DevKit
-  u8g2.begin(/*Select=*/ 7, /*Right/Next=*/ A1, /*Left/Prev=*/ A2, /*Up=*/ A0, /*Down=*/ A3, /*Home/Cancel=*/ 8); // Arduboy 10 (Production)
-
-  u8g2.setFont(u8g2_font_6x12_tr);
+  u8g2.begin();
+  Serial.begin(9600);
 }
-
-const char *string_list = 
-  "Altocumulus\n"
-  "Altostratus\n"
-  "Cirrocumulus\n"
-  "Cirrostratus\n"
-  "Cirrus\n"
-  "Cumulonimbus\n"
-  "Cumulus\n"
-  "Nimbostratus\n"
-  "Stratocumulus\n"
-  "Stratus";
-
-uint8_t current_selection = 0;
-
 
 void loop(void) {
-
-  current_selection = u8g2.userInterfaceSelectionList(
-    "Cloud Types",
-    current_selection, 
-    string_list);
-
-  if ( current_selection == 0 ) {
-    u8g2.userInterfaceMessage(
-	"Nothing selected.", 
-	"",
-	"",
-	" ok ");
-  } else {
-    u8g2.userInterfaceMessage(
-	"Selection:", 
-	u8x8_GetStringLineStart(current_selection-1, string_list ),
-	"",
-	" ok \n cancel ");
-  }
+  u8g2.clearBuffer();					// clear the internal memory
+  u8g2.setFont(u8g2_font_ncenB08_tr);	// choose a suitable font
+  u8g2.drawStr(0,10,"Hello World!");	// write something to the internal memory
+  u8g2.sendBuffer();					// transfer internal memory to the display
+  
+  // Create a sceenshot. The picture (XBM or PBM format) is sent to the serial output. 
+  // Copy and paste the output from the Arduino serial monitor into a file.
+  // Depending on the display controller use u8g2.writeBufferXBM() or u8g2.writeBufferXBM2()
+  // For SH1122, LD7032, ST7920, ST7986, LC7981, T6963, SED1330, RA8835, MAX7219, LS0?
+  // use u8g2.writeBufferXBM2(), for all others use u8g2.writeBufferXBM2()
+  u8g2.writeBufferXBM(Serial);			// Write XBM image to serial out
+  
+  delay(1000);  
 }
-
 

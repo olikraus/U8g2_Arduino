@@ -340,7 +340,7 @@ struct u8x8_struct
 					/* i2c_address is the address for writing data to the display */
 					/* usually, the lowest bit must be zero for a valid address */
   uint8_t i2c_started;	/* for i2c interface */
-  uint8_t device_address;	/* this is the device address, replacement for U8X8_MSG_CAD_SET_DEVICE */
+  uint8_t device_address;	/* OBSOLETE???? - this is the device address, replacement for U8X8_MSG_CAD_SET_DEVICE */
   uint8_t utf8_state;		/* number of chars which are still to scan */
   uint8_t gpio_result;	/* return value from the gpio call (only for MENU keys at the moment) */ 
   uint8_t debounce_default_pin_state;
@@ -960,6 +960,7 @@ uint8_t u8x8_GetUTF8Len(u8x8_t *u8x8, const char *s);
 /* itoa procedures */
 const char *u8x8_u8toa(uint8_t v, uint8_t d);
 const char *u8x8_u16toa(uint16_t v, uint8_t d);
+const char *u8x8_utoa(uint16_t v);
 
 
 /*==========================================*/
@@ -999,6 +1000,26 @@ uint8_t u8x8_UserInterfaceSelectionList(u8x8_t *u8x8, const char *title, uint8_t
 
 /* u8x8_message.c  */
 uint8_t u8x8_UserInterfaceMessage(u8x8_t *u8x8, const char *title1, const char *title2, const char *title3, const char *buttons);
+
+/*==========================================*/
+/* u8x8_capture.c */
+
+/* vertical_top memory architecture */
+uint8_t u8x8_capture_get_pixel_1(uint16_t x, uint16_t y, uint8_t *dest_ptr, uint8_t tile_width);
+
+/* horizontal right memory architecture */
+/* SH1122, LD7032, ST7920, ST7986, LC7981, T6963, SED1330, RA8835, MAX7219, LS0 */ 
+uint8_t u8x8_capture_get_pixel_2(uint16_t x, uint16_t y, uint8_t *dest_ptr, uint8_t tile_width);
+
+
+
+void u8x8_capture_write_pbm_pre(uint8_t tile_width, uint8_t tile_height, void (*out)(const char *s));
+void u8x8_capture_write_pbm_buffer(uint8_t *buffer, uint8_t tile_width, uint8_t tile_height, uint8_t (*get_pixel)(uint16_t x, uint16_t y, uint8_t *dest_ptr, uint8_t tile_width), void (*out)(const char *s));
+
+void u8x8_capture_write_xbm_pre(uint8_t tile_width, uint8_t tile_height, void (*out)(const char *s));
+void u8x8_capture_write_xbm_buffer(uint8_t *buffer, uint8_t tile_width, uint8_t tile_height, uint8_t (*get_pixel)(uint16_t x, uint16_t y, uint8_t *dest_ptr, uint8_t tile_width), void (*out)(const char *s));
+
+
 
 /*==========================================*/
 
