@@ -1376,5 +1376,4 @@ void u8g2_SetFontScroll(u8g2_t *u8g2, int8_t x, int8_t y, uint8_t gap)
   u8g2->font_decode.scroll_y = y;
   u8g2->font_decode.gap = gap;
 #endif
-
 }
