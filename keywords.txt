@@ -80,6 +80,8 @@ setFontPosCenter	KEYWORD2
 setFontRefHeightAll	KEYWORD2
 setFontRefHeightExtendedText	KEYWORD2
 setFontRefHeightText	KEYWORD2
+setFontScroll	KEYWORD2
+setGrey		KEYWORD2
 setI2CAddress	KEYWORD2
 setMaxClipWindow	KEYWORD2
 setPowerSave	KEYWORD2
