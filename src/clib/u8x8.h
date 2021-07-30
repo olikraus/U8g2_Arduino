@@ -545,6 +545,14 @@ uint8_t u8x8_DrawTile(u8x8_t *u8x8, uint8_t x, uint8_t y, uint8_t cnt, uint8_t *
 void u8x8_SetupMemory(u8x8_t *u8x8);
 
 /*
+  Init the interface to the display, but not the display itself.
+  This might be useful, if the display is already running.
+  
+  InitInterface is called from InitDisplay, do not call both functions.
+*/
+void u8x8_InitInterface(u8x8_t *u8x8);
+
+/*
   After calling u8x8_SetupMemory()/u8x8_Setup(), init the display hardware itself.
   This will will the first time, u8x8 talks to the display.
   It will init the display, but keep display in power save mode. 
@@ -928,6 +936,8 @@ uint8_t u8x8_d_uc1638_160x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *
 uint8_t u8x8_d_uc1638_192x96(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_ks0108_128x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_ks0108_erm19264(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_t7932_150x32(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr); /* t7932 and hd44102 are compatible */
+uint8_t u8x8_d_hd44102_100x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr); /* t7932 and hd44102 are compatible */
 uint8_t u8x8_d_sbn1661_122x32(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_sed1520_122x32(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_pcd8544_84x48(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
