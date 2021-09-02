@@ -94,7 +94,9 @@
   It will consume about 40 bytes more in flash memory of the AVR.
   HVLine procedures are also used by the text drawing functions.
 */
+#ifndef U8G2_WITHOUT_HVLINE_SPEED_OPTIMIZATION
 #define U8G2_WITH_HVLINE_SPEED_OPTIMIZATION
+#endif
 
 /*
   The following macro activates the early intersection check with the current visible area.
@@ -103,7 +105,9 @@
   With a full framebuffer in RAM and if most graphical elements are drawn within the visible area, then this
   macro can be commented to reduce code size.
 */
+#ifndef U8G2_WITHOUT_INTERSECTION
 #define U8G2_WITH_INTERSECTION
+#endif
 
 
 /*
@@ -113,7 +117,9 @@
   Setting a clip window will restrict all drawing to this window.
   Clip window support requires about 200 bytes flash memory on AVR systems
 */
+#ifndef U8G2_WITHOUT_CLIP_WINDOW_SUPPORT
 #define U8G2_WITH_CLIP_WINDOW_SUPPORT
+#endif
 
 /*
   The following macro enables all four drawing directions for glyphs and strings.
@@ -121,7 +127,9 @@
   
   Jan 2020: Disabling this macro will save up to 600 bytes on AVR 
 */
+#ifndef U8G2_WITHOUT_FONT_ROTATION
 #define U8G2_WITH_FONT_ROTATION
+#endif
 
 /*
   U8glib V2 contains support for unicode plane 0 (Basic Multilingual Plane, BMP).
@@ -147,9 +155,26 @@
       - C-Code Strings are assumbed to be ISO 8859-1/CP1252 encoded
       - Only character values 0 to 255 are supported in the font file.
 */
+#ifndef U8G2_WITHOUT_UNICODE
 #define U8G2_WITH_UNICODE
+#endif
 
 
+/*
+  See issue https://github.com/olikraus/u8g2/issues/1561
+  The old behaviour of the StrWidth and UTF8Width functions returned an unbalanced string width, where
+  a small space was added to the left but not to the right of the string in some cases.
+  The new "balanced" procedure will assume the same gap on the left and the right side of the string
+  
+  Example: The string width of "C" with font u8g2_font_helvR08_tr was returned as 7.
+  A frame of width 9 would place the C a little bit more to the right (width of that "C" are 6 pixel).
+  If U8G2_BALANCED_STR_WIDTH_CALCULATION is defined, the width of "C" is returned as 8.
+  
+  Not defining U8G2_BALANCED_STR_WIDTH_CALCULATION would fall back to the old bahavior.
+*/
+#ifndef U8G2_NO_BALANCED_STR_WIDTH_CALCULATION 
+#define U8G2_BALANCED_STR_WIDTH_CALCULATION
+#endif
 
 
 /*==========================================*/
@@ -950,6 +975,12 @@ void u8g2_Setup_uc1608_240x128_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_m
 void u8g2_Setup_uc1608_i2c_240x128_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_uc1608_i2c_240x128_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_uc1608_i2c_240x128_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_uc1609_slg19264_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_uc1609_slg19264_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_uc1609_slg19264_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_uc1609_i2c_slg19264_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_uc1609_i2c_slg19264_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_uc1609_i2c_slg19264_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_uc1638_160x128_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_uc1638_160x128_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_uc1638_160x128_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
@@ -1100,6 +1131,12 @@ void u8g2_Setup_st7571_128x128_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_m
 void u8g2_Setup_st7571_i2c_128x128_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7571_i2c_128x128_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7571_i2c_128x128_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7571_128x96_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7571_128x96_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7571_128x96_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7571_i2c_128x96_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7571_i2c_128x96_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st7571_i2c_128x96_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7586s_s028hn118a_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7586s_s028hn118a_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7586s_s028hn118a_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
@@ -1396,6 +1433,33 @@ void u8g2_DrawFrame(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u
 void u8g2_DrawRBox(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, u8g2_uint_t r);
 void u8g2_DrawRFrame(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, u8g2_uint_t r);
 
+/*==========================================*/
+/* u8g2_button.c */
+
+/* border width */
+#define U8G2_BTN_BW_POS 0
+#define U8G2_BTN_BW_MASK 7
+#define U8G2_BTN_BW0 0x00
+#define U8G2_BTN_BW1 0x01
+#define U8G2_BTN_BW2 0x02
+#define U8G2_BTN_BW3 0x03
+
+/* enable shadow and define gap to button */
+#define U8G2_BTN_SHADOW_POS 3
+#define U8G2_BTN_SHADOW_MASK 0x18
+#define U8G2_BTN_SHADOW0 0x08
+#define U8G2_BTN_SHADOW1 0x10
+#define U8G2_BTN_SHADOW2 0x18
+
+/* text is displayed inverted */
+#define U8G2_BTN_INV 0x20
+
+/* horizontal center */
+#define U8G2_BTN_HCENTER 0x40
+
+void u8g2_DrawButtonFrame(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t flags, u8g2_uint_t text_width, u8g2_uint_t padding_h, u8g2_uint_t padding_v);
+void u8g2_DrawButtonUTF8(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t flags, u8g2_uint_t width, u8g2_uint_t padding_h, u8g2_uint_t padding_v, const char *text);
+
 
 /*==========================================*/
 /* u8g2_polygon.c */
@@ -1451,6 +1515,8 @@ uint8_t u8g2_IsAllValidUTF8(u8g2_t *u8g2, const char *str);	// checks whether al
 
 u8g2_uint_t u8g2_GetStrWidth(u8g2_t *u8g2, const char *s);
 u8g2_uint_t u8g2_GetUTF8Width(u8g2_t *u8g2, const char *str);
+/*u8g2_uint_t u8g2_GetExactStrWidth(u8g2_t *u8g2, const char *s);*/ /*obsolete, see also https://github.com/olikraus/u8g2/issues/1561 */
+
 
 void u8g2_SetFontPosBaseline(u8g2_t *u8g2);
 void u8g2_SetFontPosBottom(u8g2_t *u8g2);
