@@ -6,7 +6,7 @@
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
-  Copyright (c) 2016, olikraus@gmail.com
+  Copyright (c) 2021, olikraus@gmail.com
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without modification, 
@@ -151,7 +151,8 @@ struct muif_struct
 #define MUIF_MSG_CURSOR_LEAVE 6
 #define MUIF_MSG_TOUCH_DOWN 7
 #define MUIF_MSG_TOUCH_UP 8
-
+#define MUIF_MSG_EVENT_NEXT 9
+#define MUIF_MSG_EVENT_PREV 10
 
 /* dynamic flags */
 #define MUIF_DFLAG_IS_CURSOR_FOCUS 0x01
@@ -181,8 +182,15 @@ struct mui_struct
   
   //uint8_t selected_value;   // This variable is not used by the user interface but can be used by any field function
   uint8_t tmp8;
+  
+  /* 0: mse, 1: mud */
+  uint8_t is_mud;         // a temp variable for the MUIF function to store remember up down mode. This variable will be cleared before sending MUIF_MSG_CURSOR_ENTER
   /* current field/style variables */
   //uint8_t cursor_focus_position;        // the index of the field which has focus, can be used as last argument for mui_EnterForm
+  
+  uint8_t form_scroll_total;            // reserved for MUIF, not used by mui
+  uint8_t form_scroll_top;              // reserved for MUIF, not used by mui
+  uint8_t form_scroll_visible;          // reserved for MUIF, not used by mui
   
   uint8_t delimiter;    // outer delimiter of the text part of a field
   uint8_t cmd;          // current cmd or field (e.g. U or F)
@@ -496,11 +504,13 @@ uint8_t mui_fds_next_token(mui_t *ui) MUI_NOINLINE;
 uint8_t mui_fds_get_nth_token(mui_t *ui, uint8_t n) MUI_NOINLINE;
 uint8_t mui_fds_get_token_cnt(mui_t *ui) MUI_NOINLINE;
 
-
 void mui_Init(mui_t *ui, void *graphics_data, fds_t *fds, muif_t *muif_tlist, size_t muif_tcnt);
-uint8_t mui_GetCurrentCursorFocusPosition(mui_t *ui);
+uint8_t mui_GetCurrentCursorFocusPosition(mui_t *ui) ;
 void mui_Draw(mui_t *ui);
+/* warning: The next function will overwrite the ui field variables like ui->arg, etc */
 void mui_GetSelectableFieldTextOption(mui_t *ui, uint8_t form_id, uint8_t cursor_position, uint8_t nth_token);
+/* warning: The next function will overwrite the ui field variables like ui->arg, etc */
+uint8_t mui_GetSelectableFieldOptionCnt(mui_t *ui, uint8_t form_id, uint8_t cursor_position);
 void mui_EnterForm(mui_t *ui, fds_t *fds, uint8_t initial_cursor_position);
 void mui_LeaveForm(mui_t *ui);
 uint8_t mui_GotoForm(mui_t *ui, uint8_t form_id, uint8_t initial_cursor_position);
