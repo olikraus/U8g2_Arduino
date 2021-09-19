@@ -104,8 +104,7 @@ extern "C" {
 typedef struct mui_struct mui_t;
 typedef const struct muif_struct muif_t;
 typedef uint8_t (*muif_cb)(mui_t *ui, uint8_t msg);
-typedef const char fds_t;      // form/field definition string
-//typedef const char fds_t MUI_PROGMEM;      // will work but instead MUI_PROGMEM should be added explicitly
+typedef const char fds_t MUI_PROGMEM;
 
 
 
@@ -119,9 +118,15 @@ struct muif_struct
   uint8_t extra;
   void *data;                           // might be a pointer to a variable
   muif_cb cb;                        // callback
-};
+} MUI_PROGMEM;
 
 #define MUIF(id,cflags,data,cb) { id[0], id[1], cflags, 0, data, cb} 
+#define MUIF_STYLE(n,cb)  MUIF("S" #n, 0, 0, cb) 
+#define MUIF_RO(id,cb) MUIF(id,0, 0,cb)
+#define MUIF_LABEL(cb) MUIF(".L",0, 0,cb)
+#define MUIF_GOTO(cb) MUIF(".G",MUIF_CFLAG_IS_CURSOR_SELECTABLE,0,cb)
+#define MUIF_BUTTON(id,cb) MUIF(id,MUIF_CFLAG_IS_CURSOR_SELECTABLE,0,cb)
+#define MUIF_VARIABLE(id,var,cb) MUIF(id,MUIF_CFLAG_IS_CURSOR_SELECTABLE,(var),cb)
 
 /* assumes that pointers are 16 bit so encapusalte the wread i another ifdef __AVR__ */
 #if defined(__GNUC__) && defined(__AVR__)
@@ -179,6 +184,11 @@ struct mui_struct
   fds_t *touch_focus_fds;            // the field which has touch focus
 
   fds_t *token;             // current token position
+
+  uint16_t form_scroll_total;            // reserved for MUIF, not used by mui
+  uint16_t form_scroll_top;              // reserved for MUIF, not used by mui
+  uint8_t form_scroll_visible;          // reserved for MUIF, not used by mui
+  
   
   //uint8_t selected_value;   // This variable is not used by the user interface but can be used by any field function
   uint8_t tmp8;
@@ -187,10 +197,6 @@ struct mui_struct
   uint8_t is_mud;         // a temp variable for the MUIF function to store remember up down mode. This variable will be cleared before sending MUIF_MSG_CURSOR_ENTER
   /* current field/style variables */
   //uint8_t cursor_focus_position;        // the index of the field which has focus, can be used as last argument for mui_EnterForm
-  
-  uint8_t form_scroll_total;            // reserved for MUIF, not used by mui
-  uint8_t form_scroll_top;              // reserved for MUIF, not used by mui
-  uint8_t form_scroll_visible;          // reserved for MUIF, not used by mui
   
   uint8_t delimiter;    // outer delimiter of the text part of a field
   uint8_t cmd;          // current cmd or field (e.g. U or F)
@@ -212,7 +218,7 @@ struct mui_struct
   /* last form and field */
   uint8_t last_form_id;
   uint8_t last_form_cursor_focus_position;
-};
+} ;
 
 #define mui_IsCursorFocus(mui) ((mui)->dflags & MUIF_DFLAG_IS_CURSOR_FOCUS)
 #define mui_IsTouchFocus(mui) ((mui)->dflags & MUIF_CFLAG_IS_TOUCH_SELECTABLE)
