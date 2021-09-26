@@ -151,12 +151,15 @@ struct muif_struct
 #define MUIF_MSG_DRAW 1
 #define MUIF_MSG_FORM_START 2
 #define MUIF_MSG_FORM_END 3
+/* MUIF_MSG_CURSOR_ENTER return values: 255=skip this field, <255, continue*/
 #define MUIF_MSG_CURSOR_ENTER 4
 #define MUIF_MSG_CURSOR_SELECT 5
 #define MUIF_MSG_CURSOR_LEAVE 6
 #define MUIF_MSG_TOUCH_DOWN 7
 #define MUIF_MSG_TOUCH_UP 8
+/* MUIF_MSG_EVENT_NEXT return values: 0=not handled, 1=handled, do nothing */
 #define MUIF_MSG_EVENT_NEXT 9
+/* MUIF_MSG_EVENT_PREV return values: 0=not handled, 1=handled, do nothing */
 #define MUIF_MSG_EVENT_PREV 10
 
 /* dynamic flags */
@@ -169,7 +172,7 @@ struct muif_struct
 
 
 /* must be smaller than or equal to 255 */
-#define MUI_MAX_TEXT_LEN 31
+#define MUI_MAX_TEXT_LEN 41
 
 struct mui_struct
 {
@@ -215,9 +218,10 @@ struct mui_struct
   fds_t *tmp_fds;
   fds_t *target_fds;     // used by several task functions as a return / result value
   
-  /* last form and field */
+  /* last form and field, used by mui_SaveForm and mui_RestoreForm */
   uint8_t last_form_id;
   uint8_t last_form_cursor_focus_position;
+  fds_t *last_form_fds;           // not used by mui_RestoreForm, but can be used by field functions
 } ;
 
 #define mui_IsCursorFocus(mui) ((mui)->dflags & MUIF_DFLAG_IS_CURSOR_FOCUS)
@@ -491,6 +495,7 @@ struct mui_struct
 /* style: one id only */
 #define MUI_STYLE(n) "S" #n
 
+#define MUI_DATA(id, text) "D" id "\xff" text "\xff"
 
 #define MUI_XY(id, x, y) "F" id MUI_##x MUI_##y
 /* button id must be two chars, but must be unique everywhere */
@@ -513,10 +518,10 @@ uint8_t mui_fds_get_token_cnt(mui_t *ui) MUI_NOINLINE;
 void mui_Init(mui_t *ui, void *graphics_data, fds_t *fds, muif_t *muif_tlist, size_t muif_tcnt);
 uint8_t mui_GetCurrentCursorFocusPosition(mui_t *ui) ;
 void mui_Draw(mui_t *ui);
-/* warning: The next function will overwrite the ui field variables like ui->arg, etc */
-void mui_GetSelectableFieldTextOption(mui_t *ui, uint8_t form_id, uint8_t cursor_position, uint8_t nth_token);
-/* warning: The next function will overwrite the ui field variables like ui->arg, etc */
-uint8_t mui_GetSelectableFieldOptionCnt(mui_t *ui, uint8_t form_id, uint8_t cursor_position);
+/* warning: The next function will overwrite the ui field variables like ui->arg, etc. 26 sep 2021: only ui->text is modified */
+uint8_t mui_GetSelectableFieldTextOption(mui_t *ui, fds_t *fds, uint8_t nth_token);
+/* warning: The next function will overwrite the ui field variables like ui->arg, etc 26 sep 2021: only ui->text is modified*/
+uint8_t mui_GetSelectableFieldOptionCnt(mui_t *ui, fds_t *fds);
 void mui_EnterForm(mui_t *ui, fds_t *fds, uint8_t initial_cursor_position);
 void mui_LeaveForm(mui_t *ui);
 uint8_t mui_GotoForm(mui_t *ui, uint8_t form_id, uint8_t initial_cursor_position);
@@ -525,6 +530,8 @@ void mui_RestoreForm(mui_t *ui);
 void mui_NextField(mui_t *ui);
 void mui_PrevField(mui_t *ui);
 void mui_SendSelect(mui_t *ui);
+
+
 
 #define mui_IsFormActive(ui) ((ui)->current_form_fds != NULL) 
 

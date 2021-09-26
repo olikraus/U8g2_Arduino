@@ -96,8 +96,6 @@ typedef const struct mui_u8g2_u8_min_max_struct mui_u8g2_u8_min_max_t;
 #endif
 
 
-
-
 /* helper functions */
 
 u8g2_uint_t mui_get_x(mui_t *ui);
@@ -106,6 +104,7 @@ u8g2_t *mui_get_U8g2(mui_t *ui);
 
 u8g2_uint_t mui_u8g2_get_draw_button_pi_flags(mui_t *ui) MUI_NOINLINE;
 void mui_u8g2_draw_button_utf(mui_t *ui, u8g2_uint_t flags, u8g2_uint_t width, u8g2_uint_t padding_h, u8g2_uint_t padding_v, const char *text) MUI_NOINLINE;
+void mui_u8g2_draw_button_utf_pi(mui_t *ui, u8g2_uint_t width, u8g2_uint_t padding_h, const char *text);
 
 
 /* incomplete field functions */
@@ -118,9 +117,11 @@ uint8_t mui_line_button_invers_select_u8g2(mui_t *ui, uint8_t msg);
 /* ready to use field functions */
 
 uint8_t mui_u8g2_draw_text(mui_t *ui, uint8_t msg);
-uint8_t mui_u8g2_btn_jmp_wm_fi(mui_t *ui, uint8_t msg);
-uint8_t mui_u8g2_btn_jmp_w2_fi(mui_t *ui, uint8_t msg);
-uint8_t mui_u8g2_btn_jmp_w1_pi(mui_t *ui, uint8_t msg);
+uint8_t mui_u8g2_btn_goto_wm_fi(mui_t *ui, uint8_t msg);
+uint8_t mui_u8g2_btn_goto_w2_fi(mui_t *ui, uint8_t msg);
+
+uint8_t mui_u8g2_btn_goto_w1_pi(mui_t *ui, uint8_t msg);
+uint8_t mui_u8g2_btn_goto_w1_fi(mui_t *ui, uint8_t msg);
 
 uint8_t mui_u8g2_btn_exit_wm_fi(mui_t *ui, uint8_t msg);
 
@@ -132,7 +133,10 @@ uint8_t mui_u8g2_u8_opt_line_wa_mud_pi(mui_t *ui, uint8_t msg);
 uint8_t mui_u8g2_u8_opt_parent_wm_mse_pi(mui_t *ui, uint8_t msg);
 uint8_t mui_u8g2_u8_opt_radio_child_wm_mse_pi(mui_t *ui, uint8_t msg);
 uint8_t mui_u8g2_u8_opt_radio_child_w1_mse_pi(mui_t *ui, uint8_t msg);
-uint8_t mui_u8g2_u8_opt_child_wm_mse_pi(mui_t *ui, uint8_t msg);
+uint8_t mui_u8g2_u8_opt_child_wm_mse_pi(mui_t *ui, uint8_t msg); /* like mui_u8g2_u8_opt_radio_child_wm_mse_pi, but without radio button */
+
+uint8_t mui_u8g2_goto_parent(mui_t *ui, uint8_t msg);                        /* MUIF_RO */
+uint8_t mui_u8g2_goto_child_w1_mse_pi(mui_t *ui, uint8_t msg);          /* MUIF_BUTTON, MUI_XYA */
 
 uint8_t mui_u8g2_u8_chkbox_wm_pi(mui_t *ui, uint8_t msg);
 uint8_t mui_u8g2_u8_radio_wm_pi(mui_t *ui, uint8_t msg);
@@ -152,6 +156,8 @@ uint8_t mui_u8g2_u8_char_wm_mud_pi(mui_t *ui, uint8_t msg);
 uint8_t mui_u8g2_u8_min_max_wm_mse_pi(mui_t *ui, uint8_t msg);              // data: mui_u8g2_u8_min_max_t *
 uint8_t mui_u8g2_u8_min_max_wm_mud_pi(mui_t *ui, uint8_t msg);  // data: mui_u8g2_u8_min_max_t *
 
+uint8_t mui_u8g2_u8_min_max_wm_mse_pf(mui_t *ui, uint8_t msg);
+uint8_t mui_u8g2_u8_min_max_wm_mud_pf(mui_t *ui, uint8_t msg);
 
 /*===== data = mui_u8g2_list_t*  =====*/
 #define MUIF_U8G2_U16_LIST(id, valptr, dataptr, getcb, cntcb, muif) \
