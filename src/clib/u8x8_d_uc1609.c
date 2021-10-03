@@ -1,10 +1,10 @@
 /*
 
-  u8x8_d_uc1610.c
+  u8x8_d_uc1609.c
   
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
-  Copyright (c) 2016, olikraus@gmail.com
+  Copyright (c) 2021, olikraus@gmail.com
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without modification, 
