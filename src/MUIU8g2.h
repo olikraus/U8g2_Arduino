@@ -2,7 +2,7 @@
   
   MUIU8g2.h
   
-  C++ Arduino wrapper for mui.h (monochome minimal user interface)
+  C++ Arduino wrapper for clib/mui.h (monochome minimal user interface)
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -40,8 +40,8 @@
 #ifndef MUIU8G2_HH
 #define MUIU8G2_HH
 
-#include "mui.h"
-#include "mui_u8g2.h"
+#include "clib/mui.h"
+#include "clib/mui_u8g2.h"
 
 class MUIU8G2
 {

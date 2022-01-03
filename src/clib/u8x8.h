@@ -190,8 +190,18 @@ uint8_t u8x8_pgm_read_esp(const uint8_t * addr);   /* u8x8_8x8.c */
 #define U8X8_USE_PINS
 #endif
 
-#ifdef RTT_U8G2
+#ifdef __RTTHREAD__
 #define U8X8_USE_PINS
+#endif
+
+#ifdef __LUATOS__
+#define U8X8_USE_PINS
+#endif
+
+#if defined(__ARM_LINUX__) || defined(unix) || defined(__unix__) || defined(__unix)
+/* https://github.com/olikraus/u8g2/pull/1666 */
+#define U8X8_USE_PINS
+#define U8X8_WITH_USER_PTR
 #endif
 
 /*==========================================*/
@@ -887,6 +897,7 @@ uint8_t u8x8_d_st7586s_s028hn118a(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, vo
 uint8_t u8x8_d_st7586s_erc240160(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st7586s_ymc240160(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st7588_jlx12864(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_st75160_jm16096(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st75256_jlx256128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st75256_wo256x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st75256_jlx256160(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);

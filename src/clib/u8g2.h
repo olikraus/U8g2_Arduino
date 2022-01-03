@@ -73,7 +73,7 @@
 
 /* always enable U8G2_16BIT on 32bit environments, see issue https://github.com/olikraus/u8g2/issues/1222 */
 #ifndef U8G2_16BIT
-#if defined(unix) || defined(__unix__) || defined(__arm__) || defined(__xtensa__) || defined(xtensa) || defined(__arc__) || defined(ESP8266) || defined(ESP_PLATFORM)
+#if defined(unix) || defined(__unix__) || defined(__arm__) || defined(__xtensa__) || defined(xtensa) || defined(__arc__) || defined(ESP8266) || defined(ESP_PLATFORM) || defined(__LUATOS__)
 #define U8G2_16BIT
 #endif
 #endif
@@ -85,7 +85,6 @@
   When using dynamic allocation, the stack size must be increased by u8g2_GetBufferSize bytes.
  */
 //#define U8G2_USE_DYNAMIC_ALLOC
-
 
 /* U8g2 feature selection, see also https://github.com/olikraus/u8g2/wiki/u8g2optimization */
 
@@ -191,7 +190,7 @@
 
 /* the macro U8G2_USE_LARGE_FONTS enables large fonts (>32K) */
 /* it can be enabled for those uC supporting larger arrays */
-#if defined(unix) || defined(__unix__) || defined(__arm__) || defined(__arc__) || defined(ESP8266) || defined(ESP_PLATFORM)
+#if defined(unix) || defined(__unix__) || defined(__arm__) || defined(__arc__) || defined(ESP8266) || defined(ESP_PLATFORM) || defined(__LUATOS__)
 #ifndef U8G2_USE_LARGE_FONTS
 #define U8G2_USE_LARGE_FONTS
 #endif 
@@ -415,8 +414,8 @@ void u8g2_ClearDisplay(u8g2_t *u8g2);
 #define u8g2_GetDisplayWidth(u8g2) ((u8g2)->width)
 #define u8g2_GetDrawColor(u8g2) ((u8g2)->draw_color)
 
-#define u8g2_SetI2CAddress(u8g2, address) ((u8g2_GetU8x8(u8g2))->i2c_address = (address))
 #define u8g2_GetI2CAddress(u8g2)   u8x8_GetI2CAddress(u8g2_GetU8x8(u8g2))
+#define u8g2_SetI2CAddress(u8g2, address) ((u8g2_GetU8x8(u8g2))->i2c_address = (address))
 
 #ifdef U8X8_USE_PINS 
 #define u8g2_SetMenuSelectPin(u8g2, val) u8x8_SetMenuSelectPin(u8g2_GetU8x8(u8g2), (val)) 
@@ -580,6 +579,9 @@ uint8_t *u8g2_m_17_8_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_17_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_17_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_17_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_12_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_12_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_12_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_32_20_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_32_20_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_32_20_f(uint8_t *page_cnt);
@@ -1176,6 +1178,12 @@ void u8g2_Setup_st7588_jlx12864_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_
 void u8g2_Setup_st7588_i2c_jlx12864_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7588_i2c_jlx12864_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st7588_i2c_jlx12864_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st75160_jm16096_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st75160_jm16096_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st75160_jm16096_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st75160_i2c_jm16096_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st75160_i2c_jm16096_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
+void u8g2_Setup_st75160_i2c_jm16096_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st75256_jlx256128_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st75256_wo256x128_1(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
 void u8g2_Setup_st75256_jlx256128_2(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8x8_msg_cb byte_cb, u8x8_msg_cb gpio_and_delay_cb);
@@ -1366,6 +1374,11 @@ void u8g2_SetBufferCurrTileRow(u8g2_t *u8g2, uint8_t row) U8G2_NOINLINE;
 
 void u8g2_FirstPage(u8g2_t *u8g2);
 uint8_t u8g2_NextPage(u8g2_t *u8g2);
+
+// Add ability to set buffer pointer
+#ifdef __ARM_LINUX__
+#define U8G2_USE_DYNAMIC_ALLOC
+#endif
 
 #ifdef U8G2_USE_DYNAMIC_ALLOC
 #define u8g2_SetBufferPtr(u8g2, buf) ((u8g2)->tile_buf_ptr = (buf));
@@ -1620,6 +1633,15 @@ extern const uint8_t u8g2_font_m2icon_7_tf[] U8G2_FONT_SECTION("u8g2_font_m2icon
 extern const uint8_t u8g2_font_m2icon_9_tf[] U8G2_FONT_SECTION("u8g2_font_m2icon_9_tf");
 extern const uint8_t u8g2_font_emoticons21_tr[] U8G2_FONT_SECTION("u8g2_font_emoticons21_tr");
 extern const uint8_t u8g2_font_battery19_tn[] U8G2_FONT_SECTION("u8g2_font_battery19_tn");
+extern const uint8_t u8g2_font_battery24_tr[] U8G2_FONT_SECTION("u8g2_font_battery24_tr");
+extern const uint8_t u8g2_font_squeezed_r6_tr[] U8G2_FONT_SECTION("u8g2_font_squeezed_r6_tr");
+extern const uint8_t u8g2_font_squeezed_r6_tn[] U8G2_FONT_SECTION("u8g2_font_squeezed_r6_tn");
+extern const uint8_t u8g2_font_squeezed_b6_tr[] U8G2_FONT_SECTION("u8g2_font_squeezed_b6_tr");
+extern const uint8_t u8g2_font_squeezed_b6_tn[] U8G2_FONT_SECTION("u8g2_font_squeezed_b6_tn");
+extern const uint8_t u8g2_font_squeezed_r7_tr[] U8G2_FONT_SECTION("u8g2_font_squeezed_r7_tr");
+extern const uint8_t u8g2_font_squeezed_r7_tn[] U8G2_FONT_SECTION("u8g2_font_squeezed_r7_tn");
+extern const uint8_t u8g2_font_squeezed_b7_tr[] U8G2_FONT_SECTION("u8g2_font_squeezed_b7_tr");
+extern const uint8_t u8g2_font_squeezed_b7_tn[] U8G2_FONT_SECTION("u8g2_font_squeezed_b7_tn");
 extern const uint8_t u8g2_font_freedoomr10_tu[] U8G2_FONT_SECTION("u8g2_font_freedoomr10_tu");
 extern const uint8_t u8g2_font_freedoomr10_mu[] U8G2_FONT_SECTION("u8g2_font_freedoomr10_mu");
 extern const uint8_t u8g2_font_freedoomr25_tn[] U8G2_FONT_SECTION("u8g2_font_freedoomr25_tn");
