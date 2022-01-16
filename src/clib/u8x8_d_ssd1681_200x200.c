@@ -94,19 +94,28 @@ static const uint8_t u8x8_d_ssd1681_D67_200x200_powersave0_seq[] = {
         U8X8_START_TRANSFER(),             	// enable chip, delay is part of the transfer start 
         U8X8_CA(0x22, 0xc0),			    // enable clock and charge pump 
         U8X8_C(0x20),				        // execute sequence 
-        U8X8_DLY(250),				        // according to my measures it may take up to 150ms 
-        U8X8_DLY(250),				        // but it might take longer 
+        U8X8_DLY(238),				        // according to my measures it may take up to 150ms 
+        U8X8_DLY(237),				        // but it might take longer 
         U8X8_END_TRANSFER(),          	    // disable chip 
         U8X8_END()             			    // end of sequence 
 };
+
+
+static const uint8_t u8x8_d_ssd1681_D67_200x200_powersaveDeepSleep_seq[] = {
+        U8X8_START_TRANSFER(),              // enable chip, delay is part of the transfer start
+        U8X8_CA(0x10, 0x01),
+        U8X8_END_TRANSFER(),                // disable chip
+        U8X8_END()                          // end of sequence
+};
+
 
 static const uint8_t u8x8_d_ssd1681_D67_200x200_powersave1_seq[] = {
         U8X8_START_TRANSFER(),             	// enable chip, delay is part of the transfer start 
         // disable clock and charge pump only, deep sleep is not entered, because we will loose RAM content 
         U8X8_CA(0x22, 0xc3),			    // only disable charge pump, HW reset seems to be required if the clock is disabled 
         U8X8_C(0x20),				        // execute sequence   
-        U8X8_DLY(250),
-        U8X8_DLY(250),
+        U8X8_DLY(240),
+        U8X8_DLY(239),
         U8X8_END_TRANSFER(),             	// disable chip 
         U8X8_END()             			    // end of sequence 
 };
@@ -117,49 +126,44 @@ static const uint8_t u8x8_d_ssd1681_D67_refresh_seq[] = {
         U8X8_CA(0x22, 0xf7),	// display update seq. option: clk -> CP -> LUT -> initial display -> pattern display 
         U8X8_C(0x20),	// execute sequence 
 
-        U8X8_DLY(250),	// delay for 1500ms. The current sequence takes 1300ms 
-        U8X8_DLY(250),
-        U8X8_DLY(250),
-        U8X8_DLY(250),
-        U8X8_DLY(250),
-        U8X8_DLY(250),
+        U8X8_DLY(246),	// delay for 1500ms. The current sequence takes 1300ms 
+        U8X8_DLY(245),
+        U8X8_DLY(244),
+        U8X8_DLY(243),
+        U8X8_DLY(242),
+        U8X8_DLY(241),
 
         U8X8_END_TRANSFER(),             	// disable chip 
         U8X8_END()             			    // end of sequence 
 };
 
+
+static const uint8_t u8x8_d_ssd1681_D67_part_refresh_seq[] = {
+        U8X8_START_TRANSFER(),             	// enable chip, delay is part of the transfer start 
+
+        U8X8_CA(0x22, 0xff),
+        U8X8_C(0x20),	// execute sequence 
+
+        U8X8_DLY(246),	// delay
+        U8X8_DLY(245),
+        U8X8_DLY(244),
+        U8X8_DLY(243),
+        U8X8_DLY(242),
+        U8X8_DLY(241),
+
+        U8X8_END_TRANSFER(),             	// disable chip 
+        U8X8_END()             			    // end of sequence 
+};
+
+
 static void u8x8_d_ssd1681_D67_200x200_first_init(u8x8_t *u8x8)
 {
-
-        static const uint8_t u8x8_d_ssd1681_D67_load_lut_from_opt[] = {
-                U8X8_START_TRANSFER(),                // enable chip, delay is part of the transfer start 
-                U8X8_CAA(0x1a, 0x19, 0x0 ),
-                U8X8_DLY(250),
-                U8X8_DLY(250),
-
-                U8X8_CA(0x22, 0xb1), 
-                U8X8_C(0x20),
-                U8X8_DLY(250),
-                U8X8_DLY(250),
-                U8X8_DLY(250),
-                U8X8_DLY(250),
-
-
-                U8X8_END_TRANSFER(),             	// disable chip 
-                U8X8_END()             			// end of sequence 
-        };
-
-        u8x8_cad_SendSequence( u8x8 , u8x8_d_ssd1681_D67_load_lut_from_opt);
-
-        u8x8_FillDisplay(u8x8);		
-        u8x8_RefreshDisplay(u8x8);
+/*
         u8x8_FillDisplay(u8x8);		
         u8x8_RefreshDisplay(u8x8);
         u8x8_ClearDisplay(u8x8);		
         u8x8_RefreshDisplay(u8x8);
-
-        u8x8_ClearDisplay(u8x8);		
-        u8x8_RefreshDisplay(u8x8);
+*/
 }
 
 static uint8_t *u8x8_convert_tile_for_ssd1681(uint8_t *t)
@@ -229,6 +233,8 @@ static void u8x8_d_ssd1681_draw_tile(u8x8_t *u8x8, uint8_t arg_int, void *arg_pt
 }
 
 
+
+
 static const uint8_t u8x8_d_ssd1681_D67_200x200_init_seq[] = {    
         U8X8_START_TRANSFER(),             	/* enable chip, delay is part of the transfer start */
 
@@ -240,8 +246,8 @@ static const uint8_t u8x8_d_ssd1681_D67_200x200_init_seq[] = {
         U8X8_C(0x01), /* DRIVER_OUTPUT_CONTROL: LO(EPD_HEIGHT-1), HI(EPD_HEIGHT-1). GD = 0; SM = 0; TB = 0; */
         U8X8_A(199), U8X8_A(0), U8X8_A(0),
 
-        U8X8_CA(0x3c, 0x05),  /* select boarder waveform */ 
-        U8X8_CA(0x18, 0x80),
+        U8X8_CA(0x3c, 0x05), // select boarder waveform  
+        U8X8_CA(0x18, 0x80), // internal termo 
 
         //   _setPartialRamArea;
         // Set display RAM size by Command 0x11, 0x44, 0x45
@@ -270,23 +276,30 @@ uint8_t u8x8_d_ssd1681_200x200(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void 
                         u8x8_d_helper_display_init(u8x8);
                         u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1681_D67_200x200_init_seq);    
                         u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1681_D67_200x200_powersave0_seq);
-                        u8x8_d_ssd1681_D67_200x200_first_init(u8x8);
-                        //u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1607_D67_to_display_seq); 
+                      //  u8x8_d_ssd1681_D67_200x200_first_init(u8x8);
                         break;
                 case U8X8_MSG_DISPLAY_SET_POWER_SAVE:
                         if ( arg_int == 0 )
                                 u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1681_D67_200x200_powersave0_seq);
                         else
-                                u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1681_D67_200x200_powersave1_seq);
+                                u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1681_D67_200x200_powersaveDeepSleep_seq);//u8x8_d_ssd1681_D67_200x200_powersave1_seq);
                         break;
                 case U8X8_MSG_DISPLAY_SET_FLIP_MODE:
                         break;
                 case U8X8_MSG_DISPLAY_DRAW_TILE:
                         u8x8_d_ssd1681_draw_tile(u8x8, arg_int, arg_ptr);
                         break;
-                case U8X8_MSG_DISPLAY_REFRESH:
-                        u8x8_cad_SendSequence(u8x8, u8x8_d_ssd1681_D67_refresh_seq);
+                case U8X8_MSG_DISPLAY_REFRESH:{
+                        const uint8_t *refresh_seq = u8x8_d_ssd1681_D67_refresh_seq;
+/*
+                        if ( u8x8->partial_init ) {
+                            refresh_seq = u8x8_d_ssd1681_D67_part_refresh_seq; 
+                        }
+*/
+                        u8x8_cad_SendSequence(u8x8, refresh_seq);
+
                         break;
+                        }
                 default:
                         return 0;
         }

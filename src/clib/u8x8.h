@@ -302,10 +302,12 @@ struct u8x8_display_info_struct
 #define U8X8_PIN_D6 6
 #define U8X8_PIN_D7 7
 
+
 #define U8X8_PIN_E 8
 #define U8X8_PIN_CS 9			/* parallel, SPI */
 #define U8X8_PIN_DC 10			/* parallel, SPI */
 #define U8X8_PIN_RESET 11		/* parallel, SPI, I2C */
+
 
 #define U8X8_PIN_I2C_CLOCK 12	/* 1 = Input/high impedance, 0 = drive low */
 #define U8X8_PIN_I2C_DATA 13	/* 1 = Input/high impedance, 0 = drive low */
@@ -321,8 +323,9 @@ struct u8x8_display_info_struct
 #define U8X8_PIN_MENU_HOME 19
 #define U8X8_PIN_MENU_UP 20
 #define U8X8_PIN_MENU_DOWN 21
+#define U8X8_PIN_BUSY     22     /* parallel, SPI, for E-INK */
 
-#define U8X8_PIN_INPUT_CNT 6
+#define U8X8_PIN_INPUT_CNT 7
 
 #ifdef U8X8_USE_PINS 
 #define U8X8_PIN_CNT (U8X8_PIN_OUTPUT_CNT+U8X8_PIN_INPUT_CNT)
@@ -359,6 +362,7 @@ struct u8x8_struct
 #ifdef U8X8_USE_PINS 
   uint8_t pins[U8X8_PIN_CNT];	/* defines a pinlist: Mainly a list of pins for the Arduino Envionment, use U8X8_PIN_xxx to access */
 #endif
+  uint8_t partial_init; //  eink 
 };
 
 #ifdef U8X8_WITH_USER_PTR
