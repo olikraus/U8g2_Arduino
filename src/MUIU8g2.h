@@ -2,7 +2,7 @@
   
   MUIU8g2.h
   
-  C++ Arduino wrapper for mui.h (monochome minimal user interface)
+  C++ Arduino wrapper for clib/mui.h (monochome minimal user interface)
 
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -40,8 +40,8 @@
 #ifndef MUIU8G2_HH
 #define MUIU8G2_HH
 
-#include "mui.h"
-#include "mui_u8g2.h"
+#include "clib/mui.h"
+#include "clib/mui_u8g2.h"
 
 class MUIU8G2
 {
@@ -59,9 +59,13 @@ class MUIU8G2
     mui_t *getMUI(void) { return &mui; }
 
     uint8_t getCurrentCursorFocusPosition(void) { return mui_GetCurrentCursorFocusPosition(&mui); }
+    
+    int getCurrentFormId(void) { return mui_GetCurrentFormId(&mui); }
+
+    
     void draw(void) { mui_Draw(&mui); }
-    void getSelectableFieldTextOption(uint8_t form_id, uint8_t cursor_position, uint8_t nth_token)
-      { mui_GetSelectableFieldTextOption(&mui, form_id, cursor_position, nth_token); }      
+    //void getSelectableFieldTextOption(fds_t *fds, uint8_t nth_token)
+    //  { mui_GetSelectableFieldTextOption(&mui, fds, nth_token); }      
     void enterForm(fds_t *fds, uint8_t initial_cursor_position) { mui_EnterForm(&mui, fds, initial_cursor_position); }
     void leaveForm(void) { mui_LeaveForm(&mui); }
     uint8_t gotoForm(uint8_t form_id, uint8_t initial_cursor_position) { return mui_GotoForm(&mui, form_id, initial_cursor_position); }
@@ -71,6 +75,10 @@ class MUIU8G2
     void nextField(void) { mui_NextField(&mui); }
     void prevField(void) { mui_PrevField(&mui); }
     void sendSelect(void) { mui_SendSelect(&mui); }
+    
+    void sendSelectWithExecuteOnSelectFieldSearch(void) { mui_SendSelectWithExecuteOnSelectFieldSearch(&mui); }
+    
+    
     int isFormActive(void) { return mui_IsFormActive(&mui); }    
 };
 
