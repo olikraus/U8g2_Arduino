@@ -285,13 +285,13 @@ https://github.com/olikraus/u8g2 ChangeLog
   * Changed SPI Mode for Sharp displays (ls013..., issue 1771)
   * Added many more fonts (issues 1794, 1775, 1706, 1769)
   * Fixed several bugs and compiler errors
-2022-xx-xx      v2.33.x olikraus@gmail.com
+2022-09-04      v2.33.15 olikraus@gmail.com
   * ST7567 ERC13232 (issue 1869)
   * Bugfix for ST7567: (re-)added I2C and 3-wire-SPI (issue 1939)
   * ST7920 160x32 (issue 1873)
   * ST7586 JLX384160 (issue 1932)
   * LC7981 128X128, NOT TESTED (issue 1913)
-  * SSD1316 96x32 (issue 1938)
+  * SSD1316 96x32 (issue 1938, not tested, moved to 2.34.x)
   * GP1287AI 256X50, GP1247AI 253X63 contributed (issue 1907)
   * Added support for IST3088 (issue 1887) 
   * Double size font functions: drawGlyphX2, drawStrX2, drawUTF8X2 (issue 1919)
