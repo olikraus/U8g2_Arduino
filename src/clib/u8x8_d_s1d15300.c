@@ -2,6 +2,8 @@
 
   u8x8_d_s1d15300.c
   
+  WARNING: As of today, flip mode 1 doesn't seem to work (see issue 2063)
+  
   Created as a copy of u8x8_d_st7565.c, see https://github.com/olikraus/u8g2/issues/2063
   
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
@@ -152,7 +154,7 @@ static const u8x8_display_info_t u8x8_s1d15300_lm6023_display_info =
   /* tile_width = */ 16,		/* width of 16*8=128 pixel */
   /* tile_hight = */ 8,
   /* default_x_offset = */ 0,
-  /* flipmode_x_offset = */ 0,
+  /* flipmode_x_offset = */ 4,
   /* pixel_width = */ 128,
   /* pixel_height = */ 64
 };
