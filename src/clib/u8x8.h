@@ -816,6 +816,11 @@ void u8x8_SetupBitmap(u8x8_t *u8x8, uint16_t pixel_width, uint16_t pixel_height)
 uint8_t u8x8_ConnectBitmapToU8x8(u8x8_t *u8x8);
 
 /*==========================================*/
+/* u8x8_d_framebuffer.c */
+void u8x8_SetupLinuxFb(u8x8_t *u8x8, int fbfd);
+void u8x8_LinuxFbSetActiveColor(uint32_t color);
+
+/*==========================================*/
 /* u8x8_d_utf8.c */
 void u8x8_Setup_Utf8(u8x8_t *u8x8);	/* stdout UTF-8 display */
 void utf8_show(void);		/* show content of UTF-8 frame buffer */
@@ -948,6 +953,7 @@ uint8_t u8x8_d_ssd1362_206x36(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *
 uint8_t u8x8_d_a2printer_384x240(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_sed1330_240x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_sed1330_256x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_sed1330_320x200(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_ra8835_nhd_240x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_ra8835_320x240(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_ssd1325_nhd_128x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
