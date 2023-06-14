@@ -33,6 +33,33 @@
   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
 
+  Reference Manual:
+    https://github.com/olikraus/u8g2/wiki/muiref
+
+  MUIF_U8G2_LABEL()  
+    replacement for MUIF_LABEL(mui_u8g2_draw_text), 
+    used by MUI_LABEL(x,y,"text")
+    Supports UTF8
+    
+  MUIF_U8G2_FONT_STYLE(n, font) 
+    A special u8g2 style function, which replaces MUIF_STYLE, but restricts the style change to the
+    specific font argument (however, this should be good enough in most cases).
+    As usual, the style "n" can be activated with MUI_STYLE(n) in FDS.
+    Example:
+      muif_t muif_list[]  MUI_PROGMEM = {  
+          MUIF_U8G2_LABEL(),
+          MUIF_U8G2_FONT_STYLE(0, u8g2_font_5x8_tr) 
+        };
+        fds_t fds[] MUI_PROGMEM  =
+        MUI_FORM(1)
+        MUI_STYLE(0)
+        MUI_LABEL(5,12, "5x8 Font")
+        ;
+
+    
+
+
+
 */
 
 #ifndef MUI_U8G2_H
@@ -103,23 +130,34 @@ struct mui_u8g2_u8_min_max_step_struct
   uint8_t max;
   uint8_t step;
   uint8_t flags;
+  uint8_t width;        // added with issue 2200, might not be used by all bar graph functions
 } MUI_PROGMEM;
 
 typedef const struct mui_u8g2_u8_min_max_step_struct mui_u8g2_u8_min_max_step_t;
 
+/* list of bit values for the "flags" variable */
+#define MUI_MMS_2X_BAR 0x01
+#define MUI_MMS_4X_BAR 0x02
+#define MUI_MMS_SHOW_VALUE 0x04
+#define MUI_MMS_NO_WRAP 0x08
+
 #if defined(__GNUC__) && defined(__AVR__)
+#  define mui_u8g2_u8mms_get_width(u8mm) mui_pgm_read(&((u8mm)->width))
 #  define mui_u8g2_u8mms_get_step(u8mm) mui_pgm_read(&((u8mm)->step))
 #  define mui_u8g2_u8mms_get_flags(u8mm) mui_pgm_read(&((u8mm)->flags))
 #  define mui_u8g2_u8mms_get_min(u8mm) mui_pgm_read(&((u8mm)->min))
 #  define mui_u8g2_u8mms_get_max(u8mm) mui_pgm_read(&((u8mm)->max))
 #  define mui_u8g2_u8mms_get_valptr(u8mm) ((uint8_t *)mui_pgm_wread(&((u8mm)->value)))
 #else
+#  define mui_u8g2_u8mms_get_width(u8mm) ((u8mm)->width)
 #  define mui_u8g2_u8mms_get_step(u8mm) ((u8mm)->step)
 #  define mui_u8g2_u8mms_get_flags(u8mm) ((u8mm)->flags)
 #  define mui_u8g2_u8mms_get_min(u8mm) ((u8mm)->min)
 #  define mui_u8g2_u8mms_get_max(u8mm) ((u8mm)->max)
 #  define mui_u8g2_u8mms_get_valptr(u8mm) ((u8mm)->value)
 #endif
+
+
 
 
 /* helper functions */
@@ -218,17 +256,28 @@ uint8_t mui_u8g2_u8_min_max_wm_mud_pf(mui_t *ui, uint8_t msg);  /* GIF, MUIF_U8G
 /* gcc note: the macro uses array compound literals to extend the lifetime in C++, see last section in https://gcc.gnu.org/onlinedocs/gcc/Compound-Literals.html */
 #define MUIF_U8G2_U8_MIN_MAX_STEP(id, valptr, min, max, step, flags, muif) \
   MUIF(id, MUIF_CFLAG_IS_CURSOR_SELECTABLE,  \
-  (void *)((mui_u8g2_u8_min_max_step_t [] ) {{ (valptr) MUI_U8G2_COMMA (min) MUI_U8G2_COMMA (max) MUI_U8G2_COMMA (step) MUI_U8G2_COMMA (flags) }}), \
+  (void *)((mui_u8g2_u8_min_max_step_t [] ) {{ (valptr) MUI_U8G2_COMMA (min) MUI_U8G2_COMMA (max) MUI_U8G2_COMMA (step) MUI_U8G2_COMMA (flags) MUI_U8G2_COMMA (0) }}), \
   (muif))
   
-#define MUI_MMS_2X_BAR 0x01
-#define MUI_MMS_4X_BAR 0x02
-#define MUI_MMS_SHOW_VALUE 0x04
 
 uint8_t mui_u8g2_u8_bar_wm_mse_pi(mui_t *ui, uint8_t msg);
 uint8_t mui_u8g2_u8_bar_wm_mud_pi(mui_t *ui, uint8_t msg);
 uint8_t mui_u8g2_u8_bar_wm_mse_pf(mui_t *ui, uint8_t msg);
 uint8_t mui_u8g2_u8_bar_wm_mud_pf(mui_t *ui, uint8_t msg);
+
+
+#define MUIF_U8G2_U8_MIN_MAX_STEP_WIDTH(id, valptr, min, max, step, width, flags, muif) \
+  MUIF(id, MUIF_CFLAG_IS_CURSOR_SELECTABLE,  \
+  (void *)((mui_u8g2_u8_min_max_step_t [] ) {{ (valptr) MUI_U8G2_COMMA (min) MUI_U8G2_COMMA (max) MUI_U8G2_COMMA (step) MUI_U8G2_COMMA (flags) MUI_U8G2_COMMA (width) }}), \
+  (muif))
+  
+
+uint8_t mui_u8g2_u8_fixed_width_bar_wm_mse_pi(mui_t *ui, uint8_t msg);
+uint8_t mui_u8g2_u8_fixed_width_bar_wm_mud_pi(mui_t *ui, uint8_t msg);
+uint8_t mui_u8g2_u8_fixed_width_bar_wm_mse_pf(mui_t *ui, uint8_t msg);
+uint8_t mui_u8g2_u8_fixed_width_bar_wm_mud_pf(mui_t *ui, uint8_t msg);
+
+
 
 /*===== data = mui_u8g2_list_t*  =====*/
 /* similar to mui_u8g2_u8_opt_line, but u16 and dynamic list */
