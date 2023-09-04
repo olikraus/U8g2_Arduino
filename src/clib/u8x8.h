@@ -800,6 +800,7 @@ void u8x8_SetupStdio(u8x8_t *u8x8);
 /* u8x8_d_sdl_128x64.c */
 void u8x8_Setup_SDL_128x64(u8x8_t *u8x8);
 void u8x8_Setup_SDL_240x160(u8x8_t *u8x8);
+void u8x8_Setup_SDL_256x128(u8x8_t *u8x8);
 int u8g_sdl_get_key(void);
 
 /*==========================================*/
@@ -987,6 +988,7 @@ uint8_t u8x8_d_uc1611_ew50850(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *
 uint8_t u8x8_d_uc1611_cg160160(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr); /* 160x160 */
 uint8_t u8x8_d_uc1617_jlx128128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_uc1611_ids4073(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr); /* 256x128 */
+uint8_t u8x8_d_uc1628_256x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_uc1638_160x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_uc1638_192x96(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_uc1638_240x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
