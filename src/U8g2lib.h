@@ -23226,6 +23226,12 @@ class U8G2_KS0108_ERM19264_F : public U8G2 {
     u8x8_SetPin_KS0108(getU8x8(), d0, d1, d2, d3, d4, d5, d6, d7, enable, dc, cs0, cs1, cs2, reset);
   }
 };
+class U8G2_KS0108_SMR19264B_F : public U8G2 {
+  public: U8G2_KS0108_SMR19264B_F(const u8g2_cb_t *rotation, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7, uint8_t enable, uint8_t dc, uint8_t cs0, uint8_t cs1, uint8_t reset = U8X8_PIN_NONE) : U8G2() {
+    u8g2_Setup_ks0108_smr19264b_f(&u8g2, rotation, u8x8_byte_arduino_ks0108, u8x8_gpio_and_delay_arduino);
+    u8x8_SetPin_KS0108(getU8x8(), d0, d1, d2, d3, d4, d5, d6, d7, enable, dc, cs0, cs1, U8X8_PIN_NONE, reset);
+  }
+};
 class U8G2_T7932_150X32_1 : public U8G2 {
   public: U8G2_T7932_150X32_1(const u8g2_cb_t *rotation, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7, uint8_t enable, uint8_t dc, uint8_t cs0, uint8_t cs1, uint8_t cs2, uint8_t reset = U8X8_PIN_NONE) : U8G2() {
     u8g2_Setup_t7932_150x32_1(&u8g2, rotation, u8x8_byte_arduino_ks0108, u8x8_gpio_and_delay_arduino);
