@@ -1,17 +1,15 @@
 /*
 
-  StateBufferLoop.ino
-  
-  This example implements the for/next picture drawing loop as a state machine.
-  
-  Pro: Display refresh is distributed over several steps (only one page is drawn at a time,
-  which consumes lesser time than refreshing the complete screen)
-  
-  Contra: (A) Artefacts may be visible. (B) It is more difficult to switch between different screens.
+  MUIWaveformBounce2.ino
 
+  A graphical signal waveform editor
+
+  MUI: https://github.com/olikraus/u8g2/wiki/muimanual
+  U8g2 Menu with Bounce2 Library (https://github.com/thomasfredericks/Bounce2).
+  
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
-  Copyright (c) 2016, olikraus@gmail.com
+  Copyright (c) 2024, olikraus@gmail.com
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without modification, 
@@ -42,23 +40,19 @@
 
 #include <Arduino.h>
 #include <U8g2lib.h>
+#include <MUIU8g2.h>
+#include <SimpleRotary.h>
 
-#ifdef U8X8_HAVE_HW_SPI
-#include <SPI.h>
-#endif
-#ifdef U8X8_HAVE_HW_I2C
-#include <Wire.h>
-#endif
+// SimpleRotary Library
+// https://github.com/mprograms/SimpleRotary
+// Pin A, Pin B, Button Pin
+SimpleRotary rotary(2,3,4);
+
+// To which LED should the waveform go
+// LED_BUILTIN is probably a bad idea, because the pin for LED_BUILTIN usually doesn't support PWM
+#define LED_PIN LED_BUILTIN
 
 
-/*
-  U8g2lib Example Overview:
-    Frame Buffer Examples: clearBuffer/sendBuffer. Fast, but may not work with all Arduino boards because of RAM consumption
-    Page Buffer Examples: firstPage/nextPage. Less RAM usage, should work with all Arduino boards.
-    U8x8 Text Only Example: No RAM usage, direct communication with display controller. No graphics, 8x8 Text only.
-    
-  This is a page buffer example.    
-*/
 
 // Please UNCOMMENT one of the contructor lines below
 // U8g2 Contructor List (Picture Loop Page Buffer)
@@ -393,75 +387,357 @@
 
 // End of constructor list
 
-
-void setup(void) {
-
-  /* U8g2 Project: SSD1306 Test Board */
-  //pinMode(10, OUTPUT);
-  //pinMode(9, OUTPUT);
-  //digitalWrite(10, 0);
-  //digitalWrite(9, 0);		
-
-  /* U8g2 Project: T6963 Test Board */
-  //pinMode(18, OUTPUT);
-  //digitalWrite(18, 1);	
-
-  /* U8g2 Project: KS0108 Test Board */
-  //pinMode(16, OUTPUT);
-  //digitalWrite(16, 0);	
-
-  /* U8g2 Project: LC7981 Test Board, connect RW to GND */
-  //pinMode(17, OUTPUT);
-  //digitalWrite(17, 0);	
-
-  /* U8g2 Project: Pax Instruments Shield: Enable Backlight */
-  //pinMode(6, OUTPUT);
-  //digitalWrite(6, 0);	
-
-  u8g2.begin();  
-}
-
-uint16_t seconds = 0;
+// U8g2 User Interface
+MUIU8G2 mui;
 
 
-// this task should be called as often as possible
-void high_speed_task(void) {
-  // place your commands  here, they will be executed very often
-  // as an example, calculated the seconds since startup...
-  seconds = millis() / 1000;
-}
+/*=================================================*/
+
+/* array element definition */
+
+/* changeing the values below will require major updates to the form layout */
+#define ARRAY_VALUE_MAX 15
+#define ARRAY_TIME_MAX 16
+
+struct array_element_struct
+{
+  uint8_t value;
+  uint8_t time;  
+};
+
+/* array list  */
+
+#define WAVEFORM_ELEMENT_CNT 4
+struct array_element_struct waveform_array[WAVEFORM_ELEMENT_CNT];
+
+/* array editable local copy */
+
+volatile uint8_t array_edit_pos = 0;                            // "volatile" might not be required, but still; array_edit_pos is modified by MUI callbacks and used in the extended MUIF
+struct array_element_struct array_edit_element;
 
 
-// this procedure contains the u8g2 draw commands to draw someting on the screen
-void draw() {
-    u8g2.setFont(u8g2_font_logisoso58_tn);
-    u8g2.setCursor(0,60);
-    u8g2.print(seconds);
-}
+uint8_t current_value = 0;
+uint8_t current_time = 0;
 
-// this is the state machine, which will replace the do - while loop
-void draw_page(void) {
-  static uint8_t is_next_page = 0;
-  
-  // call to first page, if required
-  if ( is_next_page == 0 )
+/*=================================================*/
+/* waveform array utility functions */
+
+void waveform_array_init(void)
+{
+  uint8_t i;
+  for( i = 0; i < WAVEFORM_ELEMENT_CNT; i++ )
   {
-    u8g2.firstPage();
-    is_next_page = 1;
-  }
-  
-  // draw our screen
-  draw();
-  
-  // call to next page
-  if ( u8g2.nextPage() == 0 ) {
-    is_next_page = 0;			// ensure, that first page is called
+      waveform_array[i].value = i;
+      waveform_array[i].time = ARRAY_TIME_MAX;
   }  
 }
 
-// arduno main loop
-void loop(void) {
-  high_speed_task();
-  draw_page();
+
+/* draw wave form based on the array content */
+/* x,y is the lower left position of the wave form */
+uint8_t waveform_array_draw(u8g2_uint_t x, u8g2_uint_t y, uint8_t array_cnt, uint8_t current_pos, uint8_t current_time)
+{
+  uint8_t i, j;
+  uint8_t prev_value;
+  uint8_t curr_value;
+  uint8_t time;
+  uint8_t t = 0;
+  uint8_t v = 255;
+    
+  prev_value = waveform_array[array_cnt-1].value;
+  for( i = 0; i < array_cnt; i++ )
+  {
+    curr_value = waveform_array[i].value;
+    time = waveform_array[i].time;
+    if ( curr_value < prev_value )
+      u8g2.drawVLine(x, y-prev_value, prev_value-curr_value+1);  
+    else
+      u8g2.drawVLine(x, y-curr_value, curr_value-prev_value+1);  
+      
+    u8g2.drawHLine(x, y-curr_value, time+1);
+    
+    for( j = 0; j < ARRAY_VALUE_MAX; j+=2 )
+      u8g2.drawPixel(x, y-j);
+    
+    if ( i == current_pos )
+    {
+      u8g2.drawHLine(x, y+2, time+1);
+    }
+    if ( t <= current_time && current_time < t+time )
+    {
+      u8g2.drawVLine(x-t+current_time, y-ARRAY_VALUE_MAX, ARRAY_VALUE_MAX+2);  
+      v = curr_value;
+    }
+    
+    t += time;
+    x += time;
+    prev_value = curr_value;
+  }
+  
+  for( j = 0; j < ARRAY_VALUE_MAX; j+=2 )
+    u8g2.drawPixel(x, y-j);
+  
+  return v;     // return the current value
 }
+
+
+/*=================================================*/
+/* special muif */
+
+/*
+  Idea: Draw some nice decoration for the waveform editor
+*/
+uint8_t muif_waveform_editor_decoration(mui_t *ui, uint8_t msg)
+{
+  switch(msg)
+  {
+    case MUIF_MSG_DRAW:
+      /* decoration for the array position and the waveform values */
+      u8g2.drawHLine(0, 24, 128);
+      /* separator between values and waveform graphics */ 
+      u8g2.drawVLine(50, 0, 24);
+
+      /* separator between waveform graphics and lower buttons */ 
+      u8g2.drawHLine(0, 46, 128);
+
+    break;
+  }
+  return 0;
+}
+
+/*
+  Idea: Introduce a field, which represents a graphical visualization of the waveform
+*/
+uint8_t muif_waveform_draw(mui_t *ui, uint8_t msg)
+{
+  switch(msg)
+  {
+    case MUIF_MSG_DRAW:
+      waveform_array[array_edit_pos] = array_edit_element;                                          // store the modified local copy back to the array, so that we can draw the current array
+      waveform_array_draw(mui_get_x(ui), mui_get_y(ui), WAVEFORM_ELEMENT_CNT, array_edit_pos, 255);
+      break;
+  }
+  return 0;
+}
+
+
+/*
+  Same as muif_waveform_draw but doesn't show the current cursor position
+*/
+uint8_t muif_waveform_show(mui_t *ui, uint8_t msg)
+{
+  switch(msg)
+  {
+    case MUIF_MSG_DRAW:
+      current_value = waveform_array_draw(mui_get_x(ui), mui_get_y(ui), WAVEFORM_ELEMENT_CNT, 255, current_time);
+      break;
+  }
+  return 0;
+}
+
+
+/*
+  Extends:      "mui_u8g2_u8_min_max_wm_mse_pi"
+  muif_list:    Use together with "MUIF_U8G2_U8_MIN_MAX" 
+  Example:      MUIF_U8G2_U8_MIN_MAX("AP", &array_edit_pos, 0, WAVEFORM_ELEMENT_CNT, muif_array_edit_pos)
+  Idea: 
+    Whenever MUI modifies the array position, then also store modified values and load new values
+  
+*/
+uint8_t muif_array_edit_pos(mui_t *ui, uint8_t msg)
+{
+  uint8_t return_value = 0; 
+  switch(msg)
+  {
+    case MUIF_MSG_FORM_START:
+      array_edit_element = waveform_array[array_edit_pos];                                          // copy local array element to the local editable copy
+      return_value = mui_u8g2_u8_min_max_wm_mud_pi(ui, msg);                    // call the original MUIF
+      break;
+    case MUIF_MSG_FORM_END:
+      return_value = mui_u8g2_u8_min_max_wm_mud_pi(ui, msg);                    // finalise the form
+      array_edit_element = waveform_array[array_edit_pos] ;                                         // store the current elements in the array before leaving the form
+      break;
+    case MUIF_MSG_CURSOR_SELECT:                      // for mse mode
+    case MUIF_MSG_EVENT_NEXT:                           // for mud mode
+    case MUIF_MSG_EVENT_PREV:                           // for mud mode
+      waveform_array[array_edit_pos] = array_edit_element;                                          // store the modified local copy back to the array
+      return_value = mui_u8g2_u8_min_max_wm_mud_pi(ui, msg);                            // let MUI modify the current array position
+      array_edit_element = waveform_array[array_edit_pos] ;                                         // load the new element from the array to the local editable copy
+      break;
+    default:
+      return_value = mui_u8g2_u8_min_max_wm_mud_pi(ui, msg);                    // for any other messages, just call the original MUIF
+  }
+  return return_value;
+}
+
+/*=================================================*/
+/* muif */
+
+muif_t muif_list[]  MUI_PROGMEM = {  
+  MUIF_U8G2_LABEL(),
+  MUIF_U8G2_FONT_STYLE(0, u8g2_font_helvR08_tr),
+
+  MUIF_BUTTON("GO", mui_u8g2_btn_goto_wm_fi),
+  MUIF_RO("WS", muif_waveform_show),
+  MUIF_RO("HL", mui_hline),
+
+  /* waveform editor */
+  
+  MUIF_RO("DE", muif_waveform_editor_decoration),
+  MUIF_RO("AD", muif_waveform_draw),
+  MUIF_U8G2_U8_MIN_MAX("AP", (uint8_t *)&array_edit_pos, 0, WAVEFORM_ELEMENT_CNT-1, muif_array_edit_pos),               // the pointer cast avoids warning because of the volatile keyword
+  MUIF_U8G2_U8_MIN_MAX("AV", &array_edit_element.value, 0, ARRAY_VALUE_MAX, mui_u8g2_u8_min_max_wm_mud_pi),
+  MUIF_U8G2_U8_MIN_MAX("AT", &array_edit_element.time, 0, ARRAY_TIME_MAX, mui_u8g2_u8_min_max_wm_mud_pi),
+  MUIF_BUTTON("AG", mui_u8g2_btn_back_wm_fi)
+};
+
+/*=================================================*/
+/* fields and forms... */
+
+fds_t fds_data[] MUI_PROGMEM  =
+
+// Main Menu
+
+MUI_FORM(1)
+MUI_STYLE(0)
+
+MUI_XYAT("GO", 63, 12, 20, "Waveform Editor")
+MUI_XYAT("GO", 63, 28, 2, "Start")
+
+MUI_XY("HL", 0, 45)
+MUI_LABEL(3,60, "Waveform")
+MUI_XY("WS", 54, 62)
+
+// Output Waveform to LED
+
+MUI_FORM(2)
+MUI_STYLE(0)
+
+MUI_XYAT("GO", 63, 28, 1, "Stop")
+
+MUI_XY("HL", 0, 45)
+MUI_LABEL(3,60, "Waveform")
+MUI_XY("WS", 54, 62)
+
+
+// Waveform Editor
+
+MUI_FORM(20)
+MUI_STYLE(0)
+MUI_AUX("DE")
+MUI_LABEL(3,15, "Pos:")
+MUI_XY("AP", 30, 15)
+
+MUI_LABEL(54,10, "Value:")
+MUI_XY("AV", 100, 10)
+
+MUI_LABEL(54,20, "Time:")
+MUI_XY("AT", 100, 20)
+
+MUI_LABEL(3,39, "Waveform")
+MUI_XY("AD", 54, 41)
+
+MUI_XYAT("AG", 63, 59, 1, "Done")
+;
+
+
+/*=================================================*/
+/* event loop and Arduino main part */
+
+
+// global variables for menu redraw and input event handling
+uint8_t is_redraw = 1;
+
+
+void setup(void) {
+  pinMode(LED_PIN, OUTPUT);
+  
+  waveform_array_init();
+  
+  u8g2.begin();
+  mui.begin(u8g2, fds_data, muif_list, sizeof(muif_list)/sizeof(muif_t));
+  mui.gotoForm(/* form_id= */ 1, /* initial_cursor_position= */ 0);
+}
+
+uint8_t rotary_event = 0; // 0 = not turning, 1 = CW, 2 = CCW
+uint8_t push_event = 0; // 0 = not pushed, 1 = pushed
+
+void check_events(void) {
+  uint8_t tmp;
+  
+  // 0 = not pushed, 1 = pushed  
+  tmp = rotary.push();
+  if ( tmp != 0 )         // only assign the push event, never clear the event here
+    push_event = tmp;
+    
+  // 0 = not turning, 1 = CW, 2 = CCW
+  tmp = rotary.rotate();
+  if ( tmp != 0 )       // only assign the rotation event, never clear the event here
+    rotary_event = tmp;    
+}
+
+void handle_events(void) {
+  // 0 = not pushed, 1 = pushed  
+  if ( push_event == 1 ) {
+      mui.sendSelect();
+      is_redraw = 1;
+      push_event = 0;
+  }
+  
+  // 0 = not turning, 1 = CW, 2 = CCW
+  if ( rotary_event == 1 ) {
+    mui.nextField();
+    is_redraw = 1;
+    rotary_event = 0;
+  }
+  
+  if ( rotary_event == 2 ) {
+    mui.prevField();
+    is_redraw = 1;
+    rotary_event = 0;
+  }    
+}
+
+
+
+void loop(void) {
+
+  /* check whether the menu is active */
+  if ( mui.isFormActive() ) {
+
+    /* update the display content, if the redraw flag is set */
+    if ( is_redraw ) {
+      u8g2.firstPage();
+      do {
+          //check_events(); // check for button press with bounce2 library
+          mui.draw();
+          //check_events(); // check for button press with bounce2 library
+      } while( u8g2.nextPage() );
+      
+      is_redraw = 0;                    /* clear the redraw flag */
+    }
+
+    check_events(); // check for button press with bounce2 library
+    handle_events();  // process events from bounce2 library
+
+    if ( is_redraw == 0 && mui.getCurrentFormId() == 2 )
+    {
+      if ( current_value == 255 )
+      {
+        current_time = 0;
+        current_value = waveform_array[0].value;
+      }
+      else
+        current_time++;
+      analogWrite(LED_PIN, current_value*15);       // This will only work, if the output pin for the LED supports PWM 
+      delay(10);
+      is_redraw = 1;                    /* keep doing a redraw, because we want some animation */
+    }
+
+  } else {
+      /* the menu should never become inactive, but if so, then restart the menu system */
+      mui.gotoForm(/* form_id= */ 1, /* initial_cursor_position= */ 0);
+  }
+}
+
 
