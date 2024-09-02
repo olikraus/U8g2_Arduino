@@ -1,11 +1,11 @@
 /*
 
-  MUIWaveformBounce2.ino
+  MUIWaveformSimpleRotary.ino
 
   A graphical signal waveform editor
 
   MUI: https://github.com/olikraus/u8g2/wiki/muimanual
-  U8g2 Menu with Bounce2 Library (https://github.com/thomasfredericks/Bounce2).
+  U8g2 Menu with SimpleRotary Library
   
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
@@ -116,6 +116,8 @@ SimpleRotary rotary(2,3,4);
 //U8G2_SSD1322_TOPWIN_240X128_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_SSD1322_NHD_256X64_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);	// Enable U8G2_16BIT in u8g2.h
 //U8G2_SSD1322_NHD_256X64_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);	// Enable U8G2_16BIT in u8g2.h
+//U8G2_SSD1322_ZJY_256X64_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);	// Enable U8G2_16BIT in u8g2.h
+//U8G2_SSD1322_ZJY_256X64_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);	// Enable U8G2_16BIT in u8g2.h
 //U8G2_SSD1362_256X64_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);	// Enable U8G2_16BIT in u8g2.h
 //U8G2_SSD1362_256X64_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);	// Enable U8G2_16BIT in u8g2.h
 //U8G2_SSD1362_206X36_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
@@ -537,7 +539,7 @@ uint8_t muif_waveform_show(mui_t *ui, uint8_t msg)
 
 
 /*
-  Extends:      "mui_u8g2_u8_min_max_wm_mse_pi"
+  Extends:      "mui_u8g2_u8_min_max_wm_mud_pi"
   muif_list:    Use together with "MUIF_U8G2_U8_MIN_MAX" 
   Example:      MUIF_U8G2_U8_MIN_MAX("AP", &array_edit_pos, 0, WAVEFORM_ELEMENT_CNT, muif_array_edit_pos)
   Idea: 
