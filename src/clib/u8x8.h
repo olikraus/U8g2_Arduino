@@ -923,6 +923,7 @@ uint8_t u8x8_d_st7567_64x32(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *ar
 uint8_t u8x8_d_st7567_hem6432(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st7567_os12864(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st7567_erc13232(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_d_st7567_erc12864(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st7567_lw12832(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st7567_yxd12832(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_st7567_96x65(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
@@ -1059,7 +1060,7 @@ uint8_t u8x8_d_gu800_160x16(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *ar
 uint8_t u8x8_d_gp1287ai_256x50(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_gp1247ai_253x63(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_d_gp1294ai_256x48(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
-
+uint8_t u8x8_d_ssd1315_128x64_noname(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 
 
 /*==========================================*/
@@ -1093,6 +1094,7 @@ uint8_t u8x8_GetUTF8Len(u8x8_t *u8x8, const char *s);
 /* itoa procedures */
 const char *u8x8_u8toa(uint8_t v, uint8_t d);
 const char *u8x8_s8toa(int8_t v, uint8_t d);
+const char *u8x8_u8tox(uint8_t v, uint8_t d);
 const char *u8x8_u16toa(uint16_t v, uint8_t d);
 const char *u8x8_utoa(uint16_t v);
 
