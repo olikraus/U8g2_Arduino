@@ -131,9 +131,17 @@ static uint8_t *u8x8_st7305_convert_a0(u8x8_t *u8x8, uint8_t *p)
 
  /* contributed by https://github.com/ischenz */
  /* u8g2 first row */ 
-  static uint8_t map1[16] = { 0x00, 0x02, 0x08, 0x0A, 0x20, 0x22, 0x28, 0x2A, 0x80, 0x82, 0x88, 0x8A, 0xA0, 0xA2, 0xA8, 0xAA }; 
+  static uint8_t map1[16] = { 
+      0x00, 0x02, 0x08, 0x0A, 
+      0x20, 0x22, 0x28, 0x2A, 
+      0x80, 0x82, 0x88, 0x8A, 
+      0xA0, 0xA2, 0xA8, 0xAA }; 
  /* u8g2 second row */ 
-  static uint8_t map2[16] = { 0x00, 0x01, 0x04, 0x05, 0x10, 0x11, 0x14, 0x15, 0x40, 0x41, 0x44, 0x45, 0x50, 0x51, 0x54, 0x55 };  
+  static uint8_t map2[16] = { 
+    0x00, 0x01, 0x04, 0x05, 
+    0x10, 0x11, 0x14, 0x15, 
+    0x40, 0x41, 0x44, 0x45, 
+    0x50, 0x51, 0x54, 0x55 };  
   
   memset(buf, 0, 6);
   
@@ -207,15 +215,15 @@ static const uint8_t u8x8_d_st7305_122x250_init_seq[] = {
   U8X8_CA(0x36, 0xa4), 			// Memory Control, 0xa4 for the 200x200 display
   
   U8X8_CA(0x3A, 0x11), 			// Data Format 
-  U8X8_CA(0xB9, 0x23), 			// Source Setting: Clear RAM off 
+  U8X8_CA(0xB9, 0x20), 			// This command activates monochrome mode. Arg differs from ST7302 */
   U8X8_CA(0xB8, 0x09), 			// Panel Setting / Panel Layout 
   U8X8_CAA(0x2A, 0x05, 0x36), 			// col addr
   U8X8_CAA(0x2B, 0x00, 0xC7), 			// row addr
   U8X8_CA(0xD0, 0x1F), 			// Not in datasheet
   U8X8_C(0x29), 				// display on
   U8X8_CA(0x72, 0x00), 			// Not in datasheet
-  U8X8_CAA(0xB2,1, 5),                  // Frame Rate for High and Low Power Mode (hier: 32Hz and 8Hz) 
-  U8X8_C(0x39), 				// enable Low Power Mode...: 8Hz, see above
+  U8X8_CA(0xB2, 0x15),                  // Frame Rate for High and Low Power Mode (hier: 32Hz and 8Hz) 
+  U8X8_C(0x38), 				// 0x038 normal mode, 0x039 Low Power Mode (8Hz)
   U8X8_DLY(100),
 
   /*
@@ -453,7 +461,7 @@ uint8_t u8x8_d_st7305_200x200(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *
       y= (((u8x8_tile_t *)arg_ptr)->y_pos);
       y*=4;
     
-      y+=115;           // specific for the 122x250 LCD --> probably change needed for the 200x200 display
+      y+=0;           // 200x200 display
 
       u8x8_cad_StartTransfer(u8x8);
 
@@ -462,7 +470,7 @@ uint8_t u8x8_d_st7305_200x200(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *
         
         u8x8_cad_SendCmd(u8x8, 0x2a);   // column address set
         u8x8_cad_SendArg(u8x8, 0x16);   // 0x019 for the 122x250 LCD --> 0x016 for the 200x200 display
-        u8x8_cad_SendArg(u8x8, 0x26 );  // 204 pixel for the 200x200 display
+        u8x8_cad_SendArg(u8x8, 0x27 );  // 204 pixel for the 200x200 display
       
         u8x8_cad_SendCmd(u8x8, 0x2b ); 
         u8x8_cad_SendArg(u8x8, y+i); 
