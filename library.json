@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/olikraus/u8g2.git"
   },
-  "version": "2.36.14",
+  "version": "2.36.15",
   "license": "BSD-2-Clause",
   "authors": {
     "name": "Oliver Kraus",
