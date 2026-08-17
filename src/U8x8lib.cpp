@@ -1353,6 +1353,13 @@ extern "C" uint8_t u8x8_byte_arduino_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSE
       {
 	Wire.begin();
       }
+#elif defined(ARDUINO_ARCH_RP2040)
+      if ( u8x8->pins[U8X8_PIN_I2C_CLOCK] != U8X8_PIN_NONE && u8x8->pins[U8X8_PIN_I2C_DATA] != U8X8_PIN_NONE )
+      {
+        Wire.setSDA(u8x8->pins[U8X8_PIN_I2C_DATA]);
+        Wire.setSCL(u8x8->pins[U8X8_PIN_I2C_CLOCK]);
+      }
+      Wire.begin();
 #else
       Wire.begin();
 #endif
@@ -1391,6 +1398,13 @@ extern "C" uint8_t u8x8_byte_arduino_2nd_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_U
     case U8X8_MSG_BYTE_INIT:
       if ( u8x8->bus_clock == 0 ) 	/* issue 769 */
 	u8x8->bus_clock = u8x8->display_info->i2c_bus_clock_100kHz * 100000UL;
+#if defined(ARDUINO_ARCH_RP2040)
+      if ( u8x8->pins[U8X8_PIN_I2C_CLOCK] != U8X8_PIN_NONE && u8x8->pins[U8X8_PIN_I2C_DATA] != U8X8_PIN_NONE )
+      {
+        Wire1.setSDA(u8x8->pins[U8X8_PIN_I2C_DATA]);
+        Wire1.setSCL(u8x8->pins[U8X8_PIN_I2C_CLOCK]);
+      }
+#endif
       Wire1.begin();
       break;
     case U8X8_MSG_BYTE_SET_DC:
